@@ -1,0 +1,54 @@
+{
+  "seen": {
+    "n_images": 2000,
+    "crop": {
+      "top1": 0.9005,
+      "top5": 0.9635
+    },
+    "disease": {
+      "top1": 0.694,
+      "top5": 0.9045
+    },
+    "composition": {
+      "top1": 0.679,
+      "top5": 0.884
+    },
+    "composition_closed_world": {
+      "top1": 0.679,
+      "top5": 0.886
+    }
+  },
+  "unseen": {
+    "n_images": 1448,
+    "crop": {
+      "top1": 0.6691988950276243,
+      "top5": 0.8238950276243094
+    },
+    "disease": {
+      "top1": 0.10773480662983426,
+      "top5": 0.2866022099447514
+    },
+    "composition": {
+      "top1": 0.04903314917127072,
+      "top5": 0.29972375690607733
+    },
+    "composition_closed_world": {
+      "top1": 0.7541436464088398,
+      "top5": 0.9613259668508287
+    }
+  },
+  "harmonic_mean": {
+    "top1": 0.09146151744653724,
+    "top5": 0.4476649210749857
+  },
+  "calibrated": {
+    "best_hm": 0.6071497507749253,
+    "best_bias": 6.4566015624999995,
+    "seen_at_best": 0.5825,
+    "unseen_at_best": 0.6339779005524862,
+    "auc": 0.47133442679558013
+  },
+  "checkpoints": [
+    "outputs/multitask_effb0/best.pt"
+  ]
+}
