@@ -1,7 +1,14 @@
 dataset/*
 !dataset/.gitkeep
-outputs/*
+# Outputs: share small result files, keep checkpoints and raw dumps local
+outputs/**
+!outputs/**/
 !outputs/.gitkeep
+!outputs/**/config.yaml
+!outputs/**/history.csv
+!outputs/**/eval/metrics.json
+!outputs/**/eval/top_confusions_seen.csv
+!outputs/**/eval/*.png
 *.pt
 *.pth
 __pycache__/
