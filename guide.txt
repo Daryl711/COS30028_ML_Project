@@ -1,0 +1,26 @@
+How to run the baseline:
+
+Multitask:
+python baseline/train.py 
+
+
+Independent baseline:
+python baseline/train.py --mode crop    --experiment indep_crop_effb0
+python baseline/train.py --mode disease --experiment indep_disease_effb0
+
+
+to let the training uses gpu:
+python -m pip install --force-reinstall --no-deps torch==2.7.0 torchvision==0.22.0 --index-url https://download.pytorch.org/whl/cu126
+
+
+Evaluate:
+multitask:
+python baseline/evaluate.py --checkpoints outputs/multitask_effb0/best.pt --out outputs/multitask_effb0/eval
+
+Independent:
+python baseline/evaluate.py --checkpoints outputs/indep_crop_effb0/best.pt outputs/indep_disease_effb0/best.pt --out outputs/indep_effb0/eval
+
+File	What it shows
+confusion_seen_crops.png	 All 55 crops. Each cell shows a percentage, empty cells are blank, and each row label includes its number of test images
+confusion_seen_crops_worst.png	 A zoom on the 15 crops with the lowest accuracy, among crops with at least 5 test images. Each cell shows a percentage and an image count.
+top_confusions_seen.png	The 20 most common mistakes, such as "paddy | healthy → blast: 20 of 32 images". This replaces the 323×333 pair heatmap, which couldn't be read at any size.

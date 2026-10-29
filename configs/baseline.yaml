@@ -1,0 +1,38 @@
+# Baseline config for EfficientNet on DPD-Small.
+# mode: multitask -> one backbone, crop head + disease head (Fig. 1 right)
+#       crop      -> crop-only model     } run both for the independent
+#       disease   -> disease-only model  } baseline (Fig. 1 left)
+experiment: multitask_effb0
+mode: multitask
+seed: 42
+output_dir: outputs
+
+data:
+  root: dataset
+  image_dir: DPD_Small_dataset            # folder the CSV file names are relative to
+  train_csv: DPD_Small_train.csv
+  test_seen_csv: DPD_Small_test_seen.csv
+  test_unseen_csv: DPD_Small_test_unseen.csv
+  val_fraction: 0.1            # held out from train, per composition, for model selection
+  img_size: 224
+  num_workers: 4
+
+model:
+  backbone: efficientnet_b0    # any timm name, e.g. efficientnet_b2, efficientnet_b3, tf_efficientnetv2_s
+  pretrained: true
+  dropout: 0.3
+  drop_path_rate: 0.2
+
+train:
+  epochs: 30
+  batch_size: 64
+  lr_backbone: 2.0e-4
+  lr_head: 1.0e-3
+  weight_decay: 1.0e-2
+  warmup_epochs: 2
+  label_smoothing: 0.1
+  loss_weights:
+    crop: 1.0
+    disease: 1.0
+  amp: true
+  patience: 8                  # early stopping on val score; 0 disables

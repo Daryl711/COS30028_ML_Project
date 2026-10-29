@@ -1,0 +1,9 @@
+dataset/*
+!dataset/.gitkeep
+outputs/*
+!outputs/.gitkeep
+*.pt
+*.pth
+__pycache__/
+.ipynb_checkpoints/
+.venv/
