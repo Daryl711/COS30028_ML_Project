@@ -21,7 +21,7 @@ import yaml
 from matplotlib.colors import LinearSegmentedColormap
 from matplotlib.patches import Patch
 
-from dataset import build_label_space, read_split
+from baseline.MultiTaskBaseline.InitialAttempt.dataset import build_label_space, read_split
 
 SURFACE, INK, INK_2, MUTED, GRID = "#fcfcfb", "#0b0b0b", "#52514e", "#898781", "#e1e0d9"
 WRONG_DISEASE, WRONG_CROP = "#2a78d6", "#eb6834"
