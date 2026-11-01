@@ -1,0 +1,56 @@
+{
+  "seen": {
+    "n_images": 2000,
+    "crop": {
+      "top1": 0.901,
+      "top5": 0.96
+    },
+    "disease": {
+      "top1": 0.689,
+      "top5": 0.8855
+    },
+    "composition": {
+      "top1": 0.684,
+      "top5": 0.886
+    },
+    "composition_closed_world": {
+      "top1": 0.6845,
+      "top5": 0.8865
+    }
+  },
+  "unseen": {
+    "n_images": 1448,
+    "crop": {
+      "top1": 0.7209944751381215,
+      "top5": 0.8439226519337016
+    },
+    "disease": {
+      "top1": 0.09875690607734806,
+      "top5": 0.28591160220994477
+    },
+    "composition": {
+      "top1": 0.08494475138121547,
+      "top5": 0.35428176795580113
+    },
+    "composition_closed_world": {
+      "top1": 0.7727900552486188,
+      "top5": 0.9544198895027625
+    }
+  },
+  "harmonic_mean": {
+    "top1": 0.15112193649904082,
+    "top5": 0.5061650578419625
+  },
+  "calibrated": {
+    "best_hm": 0.610877763475826,
+    "best_bias": 6.43303729057312,
+    "seen_at_best": 0.59,
+    "unseen_at_best": 0.6332872928176796,
+    "auc": 0.4877209944751381
+  },
+  "checkpoints": [
+    "/content/drive/MyDrive/Assignment2COS30082/outputs/indep_crop_effb0/best.pt",
+    "/content/drive/MyDrive/Assignment2COS30082/outputs/indep_disease_effb0/best.pt"
+  ],
+  "method": "independent_cnn"
+}
