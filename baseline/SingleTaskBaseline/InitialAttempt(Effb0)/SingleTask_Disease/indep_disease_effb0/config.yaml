@@ -1,0 +1,28 @@
+seed: 42
+output_dir: /content/drive/MyDrive/Assignment2COS30082/outputs
+mode: disease
+experiment: indep_disease_effb0
+data:
+  root: /content/drive/MyDrive/Assignment2COS30082
+  image_dir: DPD_Small_dataset
+  train_csv: DPD_Small_train.csv
+  test_seen_csv: DPD_Small_test_seen.csv
+  test_unseen_csv: DPD_Small_test_unseen.csv
+  val_fraction: 0.1
+  img_size: 224
+  num_workers: 2
+model:
+  backbone: efficientnet_b0
+  pretrained: true
+  dropout: 0.3
+  drop_path_rate: 0.2
+train:
+  epochs: 30
+  batch_size: 64
+  lr_backbone: 0.0002
+  lr_head: 0.001
+  weight_decay: 0.01
+  warmup_epochs: 2
+  label_smoothing: 0.1
+  amp: true
+  patience: 8
