@@ -1,0 +1,43 @@
+# DINOv2 ViT-S/14 baseline on DPD-Small.
+# Data, augmentation, heads, loss, schedule and epochs match the B0 baseline (configs/baseline.yaml).
+# Lines marked "changed" are the settings a Vision Transformer needs to fine-tune well.
+# mode: multitask -> one backbone, crop head + disease head (Fig. 1 right)
+#       crop      -> crop-only model     } run both for the independent
+#       disease   -> disease-only model  } baseline (Fig. 1 left)
+experiment: multitask_dinov2       # changed
+mode: multitask
+seed: 42
+output_dir: outputs
+
+data:
+  root: dataset
+  image_dir: DPD_Small_dataset
+  train_csv: DPD_Small_train.csv
+  test_seen_csv: DPD_Small_test_seen.csv
+  test_unseen_csv: DPD_Small_test_unseen.csv
+  val_fraction: 0.1
+  img_size: 224                    # same as B0; must be a multiple of 14 (224 = 16 x 14 patches)
+  num_workers: 4
+
+model:
+  backbone: vit_small_patch14_dinov2.lvd142m   # changed: ViT-S/14, DINOv2 self-supervised weights
+  pretrained: true
+  dropout: 0.3
+  drop_path_rate: 0.1              # changed: usual value for ViT-S fine-tuning
+
+train:
+  epochs: 30
+  batch_size: 64                   # same as B0 (uses ~3.3 GB of GPU memory with AMP)
+  accum_steps: 1
+  lr_backbone: 5.0e-5              # changed: learning rate of the LAST block; transformers need a lower rate
+  layer_decay: 0.75                # changed: each earlier block gets 0.75x the rate of the block above
+  lr_head: 1.0e-3
+  weight_decay: 5.0e-2             # changed: usual value for ViTs
+  warmup_epochs: 2
+  label_smoothing: 0.1
+  loss_weights:
+    crop: 1.0
+    disease: 1.0
+  amp: true
+  grad_clip: 1.0                   # changed: caps gradient size; stops early instability in ViTs
+  patience: 8
