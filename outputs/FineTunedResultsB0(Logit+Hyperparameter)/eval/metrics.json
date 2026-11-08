@@ -1,0 +1,82 @@
+{
+  "seen": {
+    "n_images": 2000,
+    "crop": {
+      "top1": 0.901,
+      "top5": 0.96
+    },
+    "disease": {
+      "top1": 0.6895,
+      "top5": 0.8855
+    },
+    "composition": {
+      "top1": 0.6845,
+      "top5": 0.886
+    },
+    "composition_closed_world": {
+      "top1": 0.685,
+      "top5": 0.8865
+    }
+  },
+  "unseen": {
+    "n_images": 1448,
+    "crop": {
+      "top1": 0.7209944751381215,
+      "top5": 0.8439226519337016
+    },
+    "disease": {
+      "top1": 0.09875690607734806,
+      "top5": 0.2866022099447514
+    },
+    "composition": {
+      "top1": 0.08494475138121547,
+      "top5": 0.35428176795580113
+    },
+    "composition_closed_world": {
+      "top1": 0.7734806629834254,
+      "top5": 0.9544198895027625
+    }
+  },
+  "harmonic_mean": {
+    "top1": 0.1511341320245998,
+    "top5": 0.5061650578419625
+  },
+  "calibrated": {
+    "best_hm": 0.6117880954474636,
+    "best_bias": 6.432030954360963,
+    "seen_at_best": 0.5905,
+    "unseen_at_best": 0.6346685082872928,
+    "auc": 0.48855783839779005
+  },
+  "cross_fit_heldout": {
+    "seen1": 0.5978275578949281,
+    "unseen1": 0.7027040046397427,
+    "hm1": 0.6459318287855271,
+    "seen5": 0.8657257278587435,
+    "unseen5": 0.9098898824229683,
+    "hm5": 0.8871657552500257
+  },
+  "calibrated_advanced": {
+    "config": {
+      "tau_c": 0.0,
+      "tau_d": 0.0,
+      "T_c": 1.0,
+      "T_d": 1.5,
+      "tau_pair": 0.0,
+      "bias": 4.828153259766122
+    },
+    "metrics": {
+      "seen1": 0.595,
+      "unseen1": 0.7133977900552486,
+      "seen5": 0.865,
+      "unseen5": 0.9116022099447514,
+      "hm1": 0.6488419474706528,
+      "hm5": 0.8876898916237774
+    }
+  },
+  "checkpoints": [
+    "/content/drive/MyDrive/Assignment2COS30082/outputs/indep_crop_effb0/best.pt",
+    "/content/drive/MyDrive/Assignment2COS30082/outputs/indep_disease_effb0/best.pt"
+  ],
+  "method": "independent_cnn + logit_adjustment_v2 (per-head T/tau, pair prior, cross-fitted)"
+}
