@@ -1,0 +1,54 @@
+{
+  "seen": {
+    "n_images": 2000,
+    "crop": {
+      "top1": 0.919,
+      "top5": 0.975
+    },
+    "disease": {
+      "top1": 0.7335,
+      "top5": 0.9215
+    },
+    "composition": {
+      "top1": 0.7185,
+      "top5": 0.9095
+    },
+    "composition_closed_world": {
+      "top1": 0.7185,
+      "top5": 0.9105
+    }
+  },
+  "unseen": {
+    "n_images": 1448,
+    "crop": {
+      "top1": 0.7506906077348067,
+      "top5": 0.8915745856353591
+    },
+    "disease": {
+      "top1": 0.08494475138121547,
+      "top5": 0.27348066298342544
+    },
+    "composition": {
+      "top1": 0.04558011049723757,
+      "top5": 0.3149171270718232
+    },
+    "composition_closed_world": {
+      "top1": 0.8093922651933702,
+      "top5": 0.9861878453038674
+    }
+  },
+  "harmonic_mean": {
+    "top1": 0.08572218787622427,
+    "top5": 0.46784240556449225
+  },
+  "calibrated": {
+    "best_hm": 0.6622833332643696,
+    "best_bias": 6.505787122249604,
+    "seen_at_best": 0.608,
+    "unseen_at_best": 0.7272099447513812,
+    "auc": 0.5452986878453039
+  },
+  "checkpoints": [
+    "outputs/multitask_dinov2/best.pt"
+  ]
+}
