@@ -1,0 +1,35 @@
+{
+  "checkpoint": "outputs/multitask_bioclip_adapter/best.pt",
+  "epoch": 28,
+  "protocol": "generalized_valid_pairs",
+  "num_pairs": 333,
+  "num_seen_pairs": 323,
+  "num_unseen_pairs": 10,
+  "test_seen": {
+    "n_images": 2000,
+    "n_skipped": 0,
+    "top1": 0.594,
+    "top5": 0.847,
+    "crop_acc": 0.905,
+    "disease_acc": 0.6115,
+    "class_balanced_acc": NaN
+  },
+  "test_unseen": {
+    "n_images": 1448,
+    "n_skipped": 0,
+    "top1": 0.08908839779005524,
+    "top5": 0.4212707182320442,
+    "crop_acc": 0.7396408839779005,
+    "disease_acc": 0.1111878453038674,
+    "class_balanced_acc": 0.132659517960075
+  },
+  "test_hm_top1": 0.15493897556596217,
+  "test_hm_top5": 0.5626815997769616,
+  "ausuc": {
+    "auc": 0.4676351864640884,
+    "best_hm": 0.6186266832182681,
+    "best_bias": 4.538469696044923,
+    "seen_at_best": 0.5195,
+    "unseen_at_best": 0.7645027624309392
+  }
+}

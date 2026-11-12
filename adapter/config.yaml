@@ -1,0 +1,42 @@
+# BioCLIP + disentangling adapters on DPD-Small.
+# Every data/train setting is copied from baseline/MultiTaskBaseline/DINOv2/config.yaml.
+# Lines marked "adapter" are the only differences: the backbone is BioCLIP (frozen) and the
+# trainable part is the two post-encoder adapters + heads. DINOv2's backbone-only settings
+# (lr_backbone, layer_decay, drop_path_rate) do not apply because the backbone is frozen.
+experiment: multitask_bioclip_adapter   # adapter
+mode: multitask
+seed: 42
+output_dir: outputs
+
+data:
+  root: dataset
+  image_dir: DPD_Small_dataset
+  train_csv: DPD_Small_train.csv
+  test_seen_csv: DPD_Small_test_seen.csv
+  test_unseen_csv: DPD_Small_test_unseen.csv
+  val_fraction: 0.1
+  img_size: 224
+  num_workers: 4
+
+model:
+  backbone: hf-hub:imageomics/bioclip   # adapter: BioCLIP ViT-B/16, all weights frozen
+  pretrained: true
+  dropout: 0.3
+  bottleneck_dim: 256                  # adapter: A_c / A_d are 512 -> 256 -> 512
+  adapter_dropout: 0.1                 # adapter: dropout inside each adapter MLP
+
+train:
+  epochs: 30
+  batch_size: 64
+  accum_steps: 1
+  lr_adapter: 1.0e-3                   # adapter: new modules, same rate as the heads
+  lr_head: 1.0e-3
+  weight_decay: 5.0e-2
+  warmup_epochs: 2
+  label_smoothing: 0.1
+  loss_weights:
+    crop: 1.0
+    disease: 1.0
+  amp: true
+  grad_clip: 1.0
+  patience: 8

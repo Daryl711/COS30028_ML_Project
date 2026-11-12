@@ -1,0 +1,34 @@
+experiment: multitask_bioclip_adapter
+mode: multitask
+seed: 42
+output_dir: outputs
+data:
+  root: dataset
+  image_dir: DPD_Small_dataset
+  train_csv: DPD_Small_train.csv
+  test_seen_csv: DPD_Small_test_seen.csv
+  test_unseen_csv: DPD_Small_test_unseen.csv
+  val_fraction: 0.1
+  img_size: 224
+  num_workers: 4
+model:
+  backbone: hf-hub:imageomics/bioclip
+  pretrained: true
+  dropout: 0.3
+  bottleneck_dim: 256
+  adapter_dropout: 0.1
+train:
+  epochs: 30
+  batch_size: 64
+  accum_steps: 1
+  lr_adapter: 0.001
+  lr_head: 0.001
+  weight_decay: 0.05
+  warmup_epochs: 2
+  label_smoothing: 0.1
+  loss_weights:
+    crop: 1.0
+    disease: 1.0
+  amp: true
+  grad_clip: 1.0
+  patience: 8
