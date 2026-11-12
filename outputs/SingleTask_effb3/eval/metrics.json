@@ -1,0 +1,55 @@
+{
+  "seen": {
+    "n_images": 2000,
+    "crop": {
+      "top1": 0.909,
+      "top5": 0.9665
+    },
+    "disease": {
+      "top1": 0.7185,
+      "top5": 0.902
+    },
+    "composition": {
+      "top1": 0.712,
+      "top5": 0.8975
+    },
+    "composition_closed_world": {
+      "top1": 0.7115,
+      "top5": 0.898
+    }
+  },
+  "unseen": {
+    "n_images": 1448,
+    "crop": {
+      "top1": 0.7251381215469613,
+      "top5": 0.856353591160221
+    },
+    "disease": {
+      "top1": 0.07596685082872928,
+      "top5": 0.26035911602209943
+    },
+    "composition": {
+      "top1": 0.0531767955801105,
+      "top5": 0.369475138121547
+    },
+    "composition_closed_world": {
+      "top1": 0.7976519337016574,
+      "top5": 0.9654696132596685
+    }
+  },
+  "harmonic_mean": {
+    "top1": 0.09896243239925777,
+    "top5": 0.5234576851377427
+  },
+  "calibrated": {
+    "best_hm": 0.6401899543653822,
+    "best_bias": 6.293837890625,
+    "seen_at_best": 0.6035,
+    "unseen_at_best": 0.6816298342541437,
+    "auc": 0.5273620511049725
+  },
+  "checkpoints": [
+    "outputs/indep_crop_effb3/best.pt",
+    "outputs/indep_disease_effb3/best.pt"
+  ]
+}
