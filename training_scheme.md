@@ -1,8 +1,8 @@
 # Training scheme (applies to every experiment in this repo)
 
 This is the single training recipe for all experiments in Stages 1–3 (`guide.md`).
-It is the BioCLIP adapter scheme (`adapter/config.yaml`, `adapter/train.py`), which in turn copies the
-DINOv2 baseline. **If an experiment's config disagrees with this file, this file wins.**
+It is the BioCLIP adapter scheme (originally `adapter/`, now implemented in `stage2/stage2b/basic_text_colab.ipynb`
+and `stage3/s3_r5/`), which in turn copies the DINOv2 baseline. **If an experiment's config disagrees with this file, this file wins.**
 Results that were not trained with this scheme must not appear in the same table as results that were.
 
 The rule: an experiment may change **only** (a) the model and (b) the method-specific loss terms and
@@ -16,7 +16,7 @@ hyperparameters listed in §6. Everything in §1–§5 is fixed.
 |---|---|
 | Image folder | `dataset/DPD_Small_dataset` (original resolution, not `DPD_Small_256`) |
 | CSVs | `DPD_Small_train.csv` (8,000), `DPD_Small_test_seen.csv` (2,000), `DPD_Small_test_unseen.csv` (1,448) |
-| Validation | 10 % of **each composition** held out from train (`val_fraction: 0.1`), at least 1 image per pair stays in train, split seeded with `seed` (`split_train_val` in `adapter/dataset.py`) |
+| Validation | 10 % of **each composition** held out from train (`val_fraction: 0.1`), at least 1 image per pair stays in train, split seeded with `seed` (`split_train_val` in `stage3/s3_r5/dataset.py`) |
 | Test sets | Never read during training, model selection or hyperparameter choice |
 | Input size | 224 × 224 |
 | `num_workers` | 4 |
@@ -83,7 +83,7 @@ L = 1.0 · CE(crop logits, crop) + 1.0 · CE(disease logits, disease)  [+ method
 | Run outputs | `outputs/<experiment>/`: `best.pt`, `last.pt`, `history.csv`, `config.yaml`, `eval/metrics.json` |
 | Evaluated checkpoint | always `best.pt` |
 
-**Evaluation protocol** (`adapter/evaluate.py` + `adapter/metrics.py`; every stage uses the same one):
+**Evaluation protocol** (`stage3/s3_r5/evaluate.py` + `stage3/s3_r5/metrics.py`; every stage uses the same one):
 
 - Pair score `log p(crop|x) + log p(disease|x)`, over **valid pairs only**: the 323 train pairs plus the 10
   `test_unseen` pairs (333 candidates, generalized setting).
@@ -142,12 +142,11 @@ Sweeps (η, λ_max, …) are separate runs, named as such, and do not change the
 
 | Item | Status | Needed to comply |
 |---|---|---|
-| `adapter/` (`config.yaml`, `train.py`) | Reference implementation | — |
+| `stage3/s3_r5/` (`config.yaml`, `train.py`) | Reference implementation (replaces the removed `adapter/`) | — |
 | `configs/baseline.yaml` (EffB0) | `weight_decay: 1.0e-2`, no `grad_clip` | set `weight_decay: 5.0e-2`, add `grad_clip: 1.0` |
-| `baseline/MultiTaskBaseline/InitialAttempt(Effb0)/train.py` | does not apply gradient clipping | add clipping as in `adapter/train.py` `run_epoch` |
+| `baseline/MultiTaskBaseline/InitialAttempt(Effb0)/train.py` | does not apply gradient clipping | add clipping as in `stage3/s3_r5/train.py` (unscale, then clip) |
 | `outputs/multitask_effb0`, `outputs/SingleTask_effb0` | trained with wd 1e-2, no clipping | retrain as Stage 1 |
 | `outputs/FineTunedResultsB0(Logit+Hyperparameter)` | calibration tuned on test | not comparable; keep out of the stage tables |
-| `outputs/multitask_bioclip_adapter` | follows the scheme; adapters + linear heads (no text) | reference row only; not a stage experiment (Stage 2 has no adapters, Stage 3 uses text heads) |
 
 ## 8. Checklist before reporting a run
 

@@ -10,7 +10,7 @@ Run every command from the repo root.
 ```bash
 # GPU (CUDA 12.6)
 python -m pip install --force-reinstall --no-deps torch==2.7.0 torchvision==0.22.0 --index-url https://download.pytorch.org/whl/cu126
-pip install -r adapter/requirements.txt
+pip install -r stage3/s3_r5/requirements.txt
 ```
 
 | Stage | Question it answers | Experiments | Output names |
@@ -139,7 +139,7 @@ module(s) to that base and changes nothing else. Stage 3 is where adapters first
 | Run | Adds | What it changes | Expected effect |
 |---|---|---|---|
 | **R4** | CoOp context (M = 4) + CSP primitive tokens, KgCoOp anchor λ_kg = 8 | T_c, T_d come from learnable prompts (initialised from the taxonomy text) through the frozen text encoder; `L += λ_kg · (‖T_c − T_c⁰‖² + ‖T_d − T_d⁰‖²)` | better seen fit without unseen collapse |
-| **R5** | Separate adapters A_c, A_d | `f_c = N(v + A_c(v))` feeds the crop head, `f_d = N(v + A_d(v))` feeds the disease head (512 → 256 → 512, zero-init, as in `adapter/model.py`) | crop and disease get separate subspaces |
+| **R5** | Separate adapters A_c, A_d | `f_c = N(v + A_c(v))` feeds the crop head, `f_d = N(v + A_d(v))` feeds the disease head (512 → 256 → 512, zero-init, as in `stage3/s3_r5/model.py`) | crop and disease get separate subspaces |
 | **R5 + R6** | R5 + conditional crop-invariance (GRL) | crop discriminator on f_d behind a gradient-reversal layer, softmax restricted to the crops that carry the image's disease, only for diseases on ≥ 2 crops; λ_max = 0.1 with the DANN ramp | crop leakage in f_d drops, unseen disease accuracy rises, seen drops slightly |
 | **R4 + R5** | R4 + R5 | prompts + separate adapters | tests whether the two add up |
 | **All (R4 + R5 + R6)** | all three | full Stage 3 model | best unseen / HM |
