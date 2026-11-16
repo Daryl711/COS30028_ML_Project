@@ -1,0 +1,16 @@
+true,pred,count
+tomato / early_blight,tomato / septoria_leaf_spot,115
+tomato / early_blight,tomato / target_spot,76
+grape / black_rot,grape / alternaria_leaf_spot,74
+grape / black_rot,grape / esca,63
+tomato / early_blight,tomato / bacterial_spot,57
+tomato / early_blight,tomato / late_blight,24
+tomato / early_blight,tomato / leaf_blight,17
+mango / anthracnose,mango / gall_midge,17
+tomato / early_blight,tomato / blight_leaf,15
+mango / anthracnose,mango / brown_spot,15
+sugarcane / rust,corn / leaf_blight,13
+grape / black_rot,grape / healthy,13
+tomato / early_blight,tomato / leaf_mold,12
+cherry / aphis_spp,cherry / healthy,12
+tomato / early_blight,tomato / healthy,11
