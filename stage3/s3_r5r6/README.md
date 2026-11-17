@@ -1,0 +1,48 @@
+# Stage 3, run R5 + R6: conditional crop-invariance on the disease feature
+
+R5 (`stage3/s3_r5/`) plus a crop discriminator on the disease feature f_d behind a gradient-reversal
+layer (GRL). Nothing else changes: same data, split, schedule, model selection and evaluation as R5.
+The classification path is R5's, so prediction and every test metric are computed exactly as for R5.
+
+```
+image (224) -> BioCLIP image encoder (frozen) -> v (512)
+   f_c = N(v + A_c(v)) -> crop text head            (R5)
+   f_d = N(v + A_d(v)) -> disease text head         (R5)
+   f_d -> GRL(lambda) -> D: 512 -> 256 -> ReLU -> 55     (R6, training only)
+          softmax restricted to C(d) = crops carrying the image's disease (train split)
+          only for images whose disease is on >= 2 crops (42 diseases, ~63% of train images)
+
+loss = crop CE + disease CE (label smoothing 0.1) + L_inv (plain CE)
+lambda(p) = lambda_max * (2 / (1 + e^{-10p}) - 1),  p = step / total steps,  lambda_max = 0.1
+```
+
+The discriminator learns to tell the crop apart *within* a disease ("potato or tomato?" for an
+early-blight image); the reversed gradient trains A_d to make that impossible. Single-crop diseases are
+left alone, because there the disease determines the crop.
+
+## Run (from the repo root)
+
+```bash
+python -m stage3.s3_r5r6.train                                   # -> outputs/s3_r5r6/
+python -m stage3.s3_r5r6.evaluate --checkpoint outputs/s3_r5r6/best.pt
+
+# optional rows (PROPOSED_METHOD.md §5, §7)
+python -m stage3.s3_r5r6.train --lambda_max 0.3 --experiment s3_r5r6_lam0.3   # lambda sweep {0, 0.03, 0.1, 0.3}
+python -m stage3.s3_r5r6.train --unconditional --experiment s3_r5r6_uncond    # plain DANN ablation
+```
+
+`--lambda_max 0` is a sanity row: the discriminator still trains but no gradient reaches A_d, so it
+should reproduce R5.
+
+## Checks
+
+- Epoch 0 equals R5's (and 2b's) epoch 0: the adapters start as the identity.
+- The script asserts 42 multi-crop diseases.
+- `history.csv` adds `train_inv_loss`, `train_disc_acc` (discriminator accuracy within C(d)) and `lambda`.
+  A disc accuracy that stays near the majority-crop rate means the GRL is winning.
+
+## Outputs
+
+As R5. `eval/metrics.json["leakage"]` holds the probe on f_d as `r5r6_f_d` (majority-crop baseline,
+train-split mapping, scored on val) and the base N(v) as `base_N_v`. Compare `r5r6_f_d.leak` with
+`outputs/s3_r5/eval/metrics.json["leakage"]["r5_f_d"]["leak"]`.

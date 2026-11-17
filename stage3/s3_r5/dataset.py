@@ -51,6 +51,17 @@ def crops_of_disease(train_df: pd.DataFrame) -> dict[int, set[int]]:
     return {int(d): set(g.crop_label.astype(int).tolist()) for d, g in train_df.groupby("disease_label")}
 
 
+def majority_crop_of_disease(train_df: pd.DataFrame) -> dict[int, int]:
+    """Most frequent crop of each disease in the training split (ties -> lowest crop label).
+
+    Baseline for the leakage probe: guessing this crop needs the disease only, no crop evidence.
+    """
+    counts = train_df.groupby(["disease_label", "crop_label"]).size().reset_index(name="n")
+    counts = counts.sort_values(["disease_label", "n", "crop_label"], ascending=[True, False, True])
+    first = counts.drop_duplicates("disease_label")
+    return {int(d): int(c) for d, c in zip(first.disease_label, first.crop_label)}
+
+
 class PlantDiseaseDataset(Dataset):
     def __init__(self, df: pd.DataFrame, image_dir: str, transform):
         self.paths = [os.path.join(image_dir, p) for p in df["image"]]

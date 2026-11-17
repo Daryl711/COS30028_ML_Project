@@ -1,0 +1,41 @@
+# Stage 3, run R5 + R6: R5 (2b + separate adapters) + conditional crop-invariance GRL on f_d.
+# Every value below is training_scheme.md §1-§5, identical to stage3/s3_r5/config.yaml. The "R6" lines
+# are the only additions (training_scheme.md §6.1). R8a logit adjustment is off (Stage 2 decision).
+experiment: s3_r5r6
+seed: 42
+output_dir: outputs
+
+data:
+  root: dataset
+  image_dir: DPD_Small_dataset
+  train_csv: DPD_Small_train.csv
+  test_seen_csv: DPD_Small_test_seen.csv
+  test_unseen_csv: DPD_Small_test_unseen.csv
+  text_dir: text
+  val_fraction: 0.1
+  img_size: 224
+  num_workers: 4
+
+model:
+  backbone: hf-hub:imageomics/bioclip
+  head_dropout: 0.3
+  bottleneck_dim: 256                   # R5: A_c, A_d are 512 -> 256 -> 512
+  adapter_dropout: 0.1                  # R5
+  disc_hidden: 256                      # R6: discriminator 512 -> 256 -> 55 (2-layer MLP)
+
+r6:
+  lambda_max: 0.1                       # R6: GRL strength, DANN ramp lambda(p) = lambda_max (2/(1+e^-10p) - 1)
+  conditional: true                     # R6: softmax restricted to C(d), only diseases on >= 2 crops.
+                                        #     false = unconditional ablation sub-row (all images, all crops)
+
+train:
+  epochs: 30
+  batch_size: 64
+  warmup_epochs: 2
+  min_lr_ratio: 0.01
+  lr_new: 1.0e-3                        # text classifiers, adapters and discriminator
+  weight_decay: 5.0e-2
+  label_smoothing: 0.1                  # classification heads only; L_inv is plain CE
+  grad_clip: 1.0
+  patience: 8
+  amp: true

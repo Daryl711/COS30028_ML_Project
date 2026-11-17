@@ -91,25 +91,39 @@ def ausuc(seen_scores, seen_targets, unseen_scores, unseen_targets, num_seen, n_
             "seen_at_best": float(seen_acc[best]), "unseen_at_best": float(unseen_acc[best])}
 
 
-def leakage_probe(features, crops, diseases, crops_of_disease, seed=42, folds=5):
+def leakage_probe(features, crops, diseases, crops_of_disease, majority_crop, seed=42, folds=5):
     """Crop-leakage probe (PROPOSED_METHOD.md §6.5).
 
     Keep images whose disease occurs on >= 2 crops, fit a logistic-regression probe that predicts the
-    crop from the feature with 5-fold CV, and report Leak = (acc - chance) / (1 - chance), where
-    chance = mean_i 1/|C(d_i)|. Lower is better: 0 means the feature reveals no more than chance.
+    crop from the feature with 5-fold CV, and report Leak = (acc - chance) / (1 - chance).
+    Lower is better: 0 means the feature reveals no more about the crop than the disease alone does.
+
+    chance (primary): accuracy of guessing each disease's majority crop, with the mapping taken from
+      the TRAINING split (`majority_crop`) and scored on these images. A disease feature can always
+      reach this without any crop evidence, so it is the fair zero point.
+    chance_uniform (old definition, kept for reference): mean_i 1/|C(d_i)|. Lower than the majority
+      baseline when crops are unevenly split within a disease, so leak_uniform overstates leakage.
     """
     from sklearn.linear_model import LogisticRegression
     from sklearn.model_selection import KFold, cross_val_score
 
     crops, diseases = np.asarray(crops), np.asarray(diseases)
     mask = np.array([len(crops_of_disease.get(int(d), ())) >= 2 for d in diseases])
-    X, y = np.asarray(features)[mask], crops[mask]
+    X, y, d_m = np.asarray(features)[mask], crops[mask], diseases[mask]
     if len(y) < folds:
         return {"n_images": int(len(y)), "leak": float("nan")}
-    chance = float(np.mean([1.0 / len(crops_of_disease[int(d)]) for d in diseases[mask]]))
+    chance = float(np.mean([majority_crop[int(d)] == int(c) for d, c in zip(d_m, y)]))
+    chance_u = float(np.mean([1.0 / len(crops_of_disease[int(d)]) for d in d_m]))
     accs = cross_val_score(LogisticRegression(max_iter=5000), X, y,
                            cv=KFold(folds, shuffle=True, random_state=seed))
-    return {"n_images": int(len(y)), "n_diseases": int(len(set(diseases[mask].tolist()))),
-            "chance": chance, "probe_acc": float(accs.mean()), "probe_acc_std": float(accs.std()),
-            "leak": float((accs.mean() - chance) / (1 - chance)),
-            "leak_std": float(accs.std() / (1 - chance))}
+    acc, std = float(accs.mean()), float(accs.std())
+
+    def leak(c):
+        return float("nan") if c >= 1 else (acc - c) / (1 - c)
+
+    return {"n_images": int(len(y)), "n_diseases": int(len(set(d_m.tolist()))),
+            "probe_acc": acc, "probe_acc_std": std,
+            "chance": chance, "leak": leak(chance),
+            "leak_std": float("nan") if chance >= 1 else std / (1 - chance),
+            "chance_uniform": chance_u, "leak_uniform": leak(chance_u),
+            "leak_uniform_std": std / (1 - chance_u)}
