@@ -1,0 +1,22 @@
+{
+ "seeds": [
+  0,
+  1,
+  2
+ ],
+ "n_views": 10,
+ "epochs": 30,
+ "bs": 64,
+ "lr": 0.0005,
+ "wd": 0.05,
+ "warmup": 2,
+ "eta": 0.3,
+ "coop_lr": 0.0001,
+ "csp_lr": 0.0001,
+ "csp_wd": 0.0,
+ "ctx_init": {
+  "crop": "a photo of a",
+  "dis": "a photo of a leaf with"
+ },
+ "tune_ctx": true
+}

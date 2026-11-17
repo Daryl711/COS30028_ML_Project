@@ -50,6 +50,8 @@ def calibration_sweep(seen_scores, seen_gt, unseen_scores, unseen_gt, num_seen, 
 
     Models are biased toward seen classes; this traces the seen/unseen accuracy trade-off.
     Bias = 0 is the uncalibrated model.
+    The best bias is chosen on these (test) scores, so best_hm is an oracle number: report it with AUC,
+    never use it to tune other settings.
     """
     allsc = np.concatenate([seen_scores, unseen_scores])
     gaps = allsc[:, :num_seen].max(1) - allsc[:, num_seen:].max(1)

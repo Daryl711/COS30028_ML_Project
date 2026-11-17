@@ -6,7 +6,8 @@
   python baseline/MultiTaskBaseline/EffB3/evaluate.py --checkpoints outputs/indep_crop_effb3/best.pt outputs/indep_disease_effb3/best.pt \
                               --out outputs/indep_effb3/eval
 
-Writes metrics.json, predictions.csv, confusion matrices (seen test) and the calibration curve.
+Writes metrics.json, predictions.csv, confusion matrices (seen test), the calibration curve and logits.npz
+(raw test logits + train labels, the input of ../calibrate.py for the logit-adjusted calibration).
 """
 import argparse
 import json
@@ -93,7 +94,7 @@ def save_calibration_plot(cal, out_dir):
     fig, ax = plt.subplots(figsize=(5, 5))
     ax.plot(cal["seen_acc"], cal["unseen_acc"], lw=1.5)
     ax.scatter([cal["seen_at_best"]], [cal["unseen_at_best"]], color="red", zorder=3,
-               label=f"best HM {cal['best_hm']:.3f}")
+               label=f"best HM {cal['best_hm']:.3f} (oracle bias)")
     ax.set_xlabel("seen top-1 accuracy")
     ax.set_ylabel("unseen top-1 accuracy")
     ax.set_title(f"Seen-unseen trade-off (AUC {cal['auc']:.3f})")
@@ -119,6 +120,7 @@ def main():
     tf = build_transforms(dc["img_size"], train=False)
     image_dir = os.path.join(dc["root"], dc["image_dir"])
     results, scores_by_split, gt_by_split, pred_rows = {}, {}, {}, []
+    logits_by_split = {}
     for split, df in (("seen", seen_df), ("unseen", unseen_df)):
         gt = gt_pair_indices(df, ls)
         keep = gt >= 0
@@ -128,6 +130,7 @@ def main():
         logits = collect_logits(models, loader, device)
         scores = composition_scores(logits["crop"], logits["disease"], ls.pairs)
         scores_by_split[split], gt_by_split[split] = scores, gt
+        logits_by_split[split] = logits
 
         r = {
             "n_images": int(len(df)),
@@ -155,11 +158,19 @@ def main():
     cal = calibration_sweep(scores_by_split["seen"], gt_by_split["seen"],
                             scores_by_split["unseen"], gt_by_split["unseen"], ls.num_seen)
     results["calibrated"] = {k: cal[k] for k in ("best_hm", "best_bias", "seen_at_best", "unseen_at_best", "auc")}
+    # The bias is picked on the test sets themselves, so best_hm is an oracle number (standard CZSL reporting,
+    # like AUC). Report it next to the uncalibrated HM; don't tune more settings (T, tau, ...) against it.
+    results["calibrated"]["bias_chosen_on"] = "test_seen + test_unseen (oracle)"
     results["checkpoints"] = args.checkpoints
 
     with open(os.path.join(args.out, "metrics.json"), "w") as f:
         json.dump(results, f, indent=2)
     pd.DataFrame(pred_rows).to_csv(os.path.join(args.out, "predictions.csv"), index=False)
+    np.savez(os.path.join(args.out, "logits.npz"),
+             **{f"{s}_{h}": logits_by_split[s][h] for s in ("seen", "unseen") for h in ("crop", "disease")},
+             seen_gt=gt_by_split["seen"], unseen_gt=gt_by_split["unseen"],
+             pairs=np.asarray(ls.pairs), num_seen=ls.num_seen,
+             train_crop=train_df["crop_label"].to_numpy(), train_disease=train_df["disease_label"].to_numpy())
     save_confusions(scores_by_split["seen"], gt_by_split["seen"], ls, args.out)
     save_calibration_plot(cal, args.out)
 
@@ -171,7 +182,7 @@ def main():
     hm = results["harmonic_mean"]
     print(f"harmonic mean (composition)      {hm['top1']:.4f}   {hm['top5']:.4f}")
     c = results["calibrated"]
-    print(f"calibrated best HM {c['best_hm']:.4f} (seen {c['seen_at_best']:.4f}, unseen "
+    print(f"calibrated best HM, oracle bias picked on test {c['best_hm']:.4f} (seen {c['seen_at_best']:.4f}, unseen "
           f"{c['unseen_at_best']:.4f}, bias {c['best_bias']:.3f}) | AUC {c['auc']:.4f}")
     print(f"\nsaved to {args.out}")
 

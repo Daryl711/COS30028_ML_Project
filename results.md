@@ -141,3 +141,26 @@ Decided on the validation selection score (mean of val crop top-1 and val diseas
 | 2d sweep | 0.5 | 87.48 |
 
 **Decision: R8a is off for every Stage 3 run.** 2d does not beat 2b at the scheme default (τ_LA = 1.0, −18.4 points) or at the τ_LA = 0.5 sweep (−2.1 points). The Stage 3 base is 2b alone.
+
+## Stage 2 and CoOp runs (Colab notebooks)
+
+Test-set metrics (percentages) from the Colab notebooks in `stage2/` and `CSP_KgCooP/`. "Basic" = 2b (taxonomy text, no R8a); 2d is 2b + R8a at the given τ_LA. CoOp is a separate experiment, to be compared with CSP (not run yet). Zero-shot is epoch 0, before any training.
+
+| Metric | Zero-shot | 2b Basic | 2d τ=0.5 | 2d τ=1.0 | CoOp | CoOp + LA 0.5 |
+|---|---|---|---|---|---|---|
+| Seen T1 | 5.25 | **63.80** | 60.60 | 52.35 | 41.70 | 44.50 |
+| Seen T5 | 21.50 | **88.70** | 88.15 | 82.55 | 71.00 | 75.05 |
+| Unseen T1 | **20.86** | 3.66 | 2.97 | 3.25 | 6.28 | 5.80 |
+| HM T1 | 8.39 | 6.92 | 5.66 | 6.11 | **10.92** | 10.26 |
+| Unseen T5 | **46.89** | 25.76 | 23.69 | 28.52 | 34.39 | 36.95 |
+| Unseen crop | 37.02 | **66.71** | **66.71** | 55.66 | 60.77 | 62.78 |
+| Unseen disease | **30.46** | 8.01 | 6.42 | 6.08 | 10.22 | 8.43 |
+| Balanced unseen | 14.79 | 4.97 | 3.66 | 3.03 | **10.33** | 9.09 |
+| AUSUC | 2.88 | **43.53** | 40.28 | 34.36 | 27.67 | 32.24 |
+| Calibrated HM | 8.68 | **57.25** | 54.05 | 50.09 | 43.09 | 47.24 |
+| Best val score | 24.89 | **89.57** | 87.48 | 71.16 | 75.26 | 73.40 |
+| Best epoch / epochs run | 0 / 0 | 30 / 30 | 17 / 25 | 10 / 18 | 28 / 30 | 30 / 30 |
+
+- **R8a hurts here.** Both 2d runs are below 2b on seen accuracy, AUSUC and val score, and gain nothing on unseen, which backs the "R8a off" decision above.
+- **CoOp trades seen for unseen.** Versus 2b: unseen T1 6.3 vs 3.7, HM T1 10.9 vs 6.9, but seen T1 41.7 vs 63.8 and AUSUC 27.7 vs 43.5. Zero-shot still has the best unseen numbers (20.9 T1, 30.5 disease), so training on seen pairs costs unseen disease accuracy in every run.
+- **2b vs R5 (test).** 2b: seen 63.8 / unseen 3.7 / HM 6.9 / AUSUC 43.5; R5: 65.7 / 5.2 / 9.7 / 49.0. R5 is ahead on each, but the Colab `evaluate()` has not been checked against `stage3/s3_r5/evaluate.py`, so treat this as indicative.

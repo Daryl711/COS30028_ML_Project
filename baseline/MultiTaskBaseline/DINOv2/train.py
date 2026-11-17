@@ -143,7 +143,9 @@ def main():
     heads = heads_for_mode(cfg["mode"], ls.num_crops, ls.num_diseases)
     model = build_model(cfg, heads).to(device)
     print(f"[model] {cfg['model']['backbone']} heads={heads} "
-          f"params={sum(p.numel() for p in model.parameters()) / 1e6:.1f}M")
+          f"params={sum(p.numel() for p in model.parameters()) / 1e6:.1f}M "
+          f"trainable={sum(p.numel() for p in model.parameters() if p.requires_grad) / 1e6:.2f}M"
+          f"{' (backbone frozen)' if model.freeze_backbone else ''}")
 
     optimizer = build_optimizer(model, tc)
     accum_steps = int(tc.get("accum_steps", 1))
@@ -171,7 +173,9 @@ def main():
 
         row = {"epoch": epoch, **{f"train_{k}": v for k, v in tr.items()},
                **{f"val_{k}": v for k, v in va.items()}, "val_score": score,
-               "lr_backbone": max(g["lr"] for g in optimizer.param_groups if g.get("name") != "heads"), "time_s": time.time() - t0}
+               "lr_backbone": max((g["lr"] for g in optimizer.param_groups if g.get("name") != "heads"),
+                                  default=0.0),   # 0 when the backbone is frozen
+               "time_s": time.time() - t0}
         history.append(row)
         with open(history_path, "w", newline="") as f:
             w = csv.DictWriter(f, fieldnames=list(row))
