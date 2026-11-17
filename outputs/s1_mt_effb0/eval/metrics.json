@@ -1,0 +1,55 @@
+{
+  "seen": {
+    "n_images": 2000,
+    "crop": {
+      "top1": 0.8935,
+      "top5": 0.9605
+    },
+    "disease": {
+      "top1": 0.686,
+      "top5": 0.903
+    },
+    "composition": {
+      "top1": 0.6705,
+      "top5": 0.8755
+    },
+    "composition_closed_world": {
+      "top1": 0.67,
+      "top5": 0.876
+    }
+  },
+  "unseen": {
+    "n_images": 1448,
+    "crop": {
+      "top1": 0.6850828729281768,
+      "top5": 0.8328729281767956
+    },
+    "disease": {
+      "top1": 0.0835635359116022,
+      "top5": 0.27348066298342544
+    },
+    "composition": {
+      "top1": 0.04143646408839779,
+      "top5": 0.27624309392265195
+    },
+    "composition_closed_world": {
+      "top1": 0.7569060773480663,
+      "top5": 0.9585635359116023
+    }
+  },
+  "harmonic_mean": {
+    "top1": 0.07804951866553365,
+    "top5": 0.41997356876797365
+  },
+  "calibrated": {
+    "best_hm": 0.6031067825721035,
+    "best_bias": 6.575678710937501,
+    "seen_at_best": 0.5815,
+    "unseen_at_best": 0.6263812154696132,
+    "auc": 0.4671964779005525,
+    "bias_chosen_on": "test_seen + test_unseen (oracle)"
+  },
+  "checkpoints": [
+    "outputs/s1_mt_effb0/best.pt"
+  ]
+}
