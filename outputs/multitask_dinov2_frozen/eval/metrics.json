@@ -1,0 +1,55 @@
+{
+  "seen": {
+    "n_images": 2000,
+    "crop": {
+      "top1": 0.9225,
+      "top5": 0.9785
+    },
+    "disease": {
+      "top1": 0.6565,
+      "top5": 0.899
+    },
+    "composition": {
+      "top1": 0.648,
+      "top5": 0.8905
+    },
+    "composition_closed_world": {
+      "top1": 0.6475,
+      "top5": 0.8925
+    }
+  },
+  "unseen": {
+    "n_images": 1448,
+    "crop": {
+      "top1": 0.7541436464088398,
+      "top5": 0.9109116022099447
+    },
+    "disease": {
+      "top1": 0.08287292817679558,
+      "top5": 0.26795580110497236
+    },
+    "composition": {
+      "top1": 0.06077348066298342,
+      "top5": 0.3363259668508287
+    },
+    "composition_closed_world": {
+      "top1": 0.7852209944751382,
+      "top5": 0.9861878453038674
+    }
+  },
+  "harmonic_mean": {
+    "top1": 0.11112496882015466,
+    "top5": 0.48824899630948115
+  },
+  "calibrated": {
+    "best_hm": 0.5781079891319784,
+    "best_bias": 5.771469740867615,
+    "seen_at_best": 0.527,
+    "unseen_at_best": 0.6401933701657458,
+    "auc": 0.45529212707182315,
+    "bias_chosen_on": "test_seen + test_unseen (oracle)"
+  },
+  "checkpoints": [
+    "outputs/multitask_dinov2_frozen/best.pt"
+  ]
+}
