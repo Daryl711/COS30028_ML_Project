@@ -4,6 +4,9 @@ Same two-head design as the EfficientNet baselines. What changes:
   - the backbone is a Vision Transformer pretrained by DINOv2 (self-supervised, no labels)
   - the model is built for 224 px input (timm's default for DINOv2 is 518 px)
   - the optimizer uses layer-wise learning-rate decay, so early layers change less than late ones
+
+model.freeze_backbone: true turns this into a frozen-backbone run (linear probe): the DINOv2 weights never
+change, the backbone always runs in eval mode (no drop path) without gradients, and only the heads are trained.
 """
 from __future__ import annotations
 
@@ -31,8 +34,10 @@ class DinoV2Heads(nn.Module):
     """
 
     def __init__(self, backbone: str, heads: dict[str, int], img_size: int = 224,
-                 pretrained: bool = True, dropout: float = 0.3, drop_path_rate: float = 0.1):
+                 pretrained: bool = True, dropout: float = 0.3, drop_path_rate: float = 0.1,
+                 freeze_backbone: bool = False):
         super().__init__()
+        self.freeze_backbone = freeze_backbone
         # img_size must be a multiple of the patch size (14). timm resizes the pretrained
         # position embeddings from 518 px (37x37 patches) to this size when loading weights.
         self.backbone = timm.create_model(backbone, pretrained=pretrained, num_classes=0,
@@ -42,9 +47,19 @@ class DinoV2Heads(nn.Module):
             name: nn.Sequential(nn.Dropout(dropout), nn.Linear(dim, n))
             for name, n in heads.items()
         })
+        if freeze_backbone:
+            self.backbone.requires_grad_(False)
+            self.backbone.eval()
+
+    def train(self, mode: bool = True):
+        super().train(mode)
+        if self.freeze_backbone:
+            self.backbone.eval()  # a frozen backbone stays in eval mode: no drop path, same features every epoch
+        return self
 
     def forward(self, x: torch.Tensor, return_features: bool = False) -> dict[str, torch.Tensor]:
-        feats = self.backbone(x)  # CLS token after the final norm
+        with torch.set_grad_enabled(torch.is_grad_enabled() and not self.freeze_backbone):
+            feats = self.backbone(x)  # CLS token after the final norm
         out = {name: head(feats) for name, head in self.heads.items()}
         if return_features:
             out["features"] = feats
@@ -60,6 +75,7 @@ def build_model(cfg: dict, heads: dict[str, int], pretrained: bool | None = None
         pretrained=m.get("pretrained", True) if pretrained is None else pretrained,
         dropout=m.get("dropout", 0.3),
         drop_path_rate=m.get("drop_path_rate", 0.1),
+        freeze_backbone=m.get("freeze_backbone", False),
     )
 
 
@@ -70,7 +86,12 @@ def build_optimizer(model: DinoV2Heads, tc: dict) -> torch.optim.Optimizer:
     down to the patch embedding. Early layers hold the general DINOv2 features, so they move least.
     Biases, norms, position embedding and CLS token get no weight decay (standard for ViTs).
     The heads are new, so they get their own larger learning rate.
+    With a frozen backbone, only the heads are given to the optimizer.
     """
+    heads = {"name": "heads", "params": list(model.heads.parameters()),
+             "lr": tc["lr_head"], "weight_decay": tc["weight_decay"]}
+    if model.freeze_backbone:
+        return torch.optim.AdamW([heads])
     groups = param_groups_layer_decay(
         model.backbone,
         weight_decay=tc["weight_decay"],
@@ -80,8 +101,7 @@ def build_optimizer(model: DinoV2Heads, tc: dict) -> torch.optim.Optimizer:
     for g in groups:
         g["lr"] = tc["lr_backbone"] * g.pop("lr_scale")
         g["name"] = "backbone"
-    groups.append({"name": "heads", "params": list(model.heads.parameters()),
-                   "lr": tc["lr_head"], "weight_decay": tc["weight_decay"]})
+    groups.append(heads)
     return torch.optim.AdamW(groups)
 
 
