@@ -84,7 +84,7 @@ def run_epoch(model, loader, criterion, device, amp, optimizer=None, scheduler=N
         x = batch["image"].to(device, non_blocking=True)
         targets = {h: batch[h].to(device, non_blocking=True) for h in heads}
         with torch.set_grad_enabled(train),                 torch.autocast(device_type=device.type, dtype=torch.float16, enabled=amp):
-            out = model(x)
+            out = {k: v.float() for k, v in model(x).items()}   # losses in fp32 (training scheme §3)
             loss, _ = criterion(out, targets)
         if train:
             scaler.scale(loss / accum_steps).backward()
