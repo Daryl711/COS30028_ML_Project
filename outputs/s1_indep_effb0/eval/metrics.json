@@ -13,6 +13,9 @@
       "top1": 0.6755,
       "top5": 0.885
     },
+    "composition_class_balanced": {
+      "top1": 0.48393924265752414
+    },
     "composition_closed_world": {
       "top1": 0.676,
       "top5": 0.885
@@ -31,6 +34,9 @@
     "composition": {
       "top1": 0.0856353591160221,
       "top5": 0.34806629834254144
+    },
+    "composition_class_balanced": {
+      "top1": 0.07919798773013699
     },
     "composition_closed_world": {
       "top1": 0.7693370165745856,
