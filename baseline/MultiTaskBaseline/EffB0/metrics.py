@@ -30,6 +30,17 @@ def composition_scores(crop_logits: np.ndarray, disease_logits: np.ndarray,
     return log_softmax(crop_logits)[:, p[:, 0]] + log_softmax(disease_logits)[:, p[:, 1]]
 
 
+def class_balanced_accuracy(scores: np.ndarray, gt: np.ndarray, pair_ids) -> float:
+    """Mean of per-composition top-1 over pair_ids (each composition counts equally, however many images).
+
+    Same definition as class_balanced_acc in stage3/s3_r5/metrics.py: generalized prediction over all
+    candidate pairs, averaged over the pairs that have at least one test image.
+    """
+    pred = scores.argmax(1)
+    accs = [float((pred[gt == p] == p).mean()) for p in pair_ids if (gt == p).any()]
+    return float(np.mean(accs)) if accs else float("nan")
+
+
 def add_unseen_bias(scores: np.ndarray, num_seen: int, bias: float) -> np.ndarray:
     s = scores.copy()
     s[:, num_seen:] += bias

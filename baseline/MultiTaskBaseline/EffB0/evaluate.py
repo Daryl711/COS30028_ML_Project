@@ -25,7 +25,8 @@ from tqdm import tqdm
 
 from dataset import PlantDiseaseDataset, audit, build_label_space, build_transforms, read_split
 import plot_confusions
-from metrics import calibration_sweep, composition_scores, harmonic_mean, topk_accuracy
+from metrics import (calibration_sweep, class_balanced_accuracy, composition_scores, harmonic_mean,
+                     topk_accuracy)
 from model import build_model
 from train import get_device
 
@@ -139,6 +140,9 @@ def main():
             # generalized: choose among ALL seen + unseen compositions (main protocol)
             "composition": topk_accuracy(scores, gt),
         }
+        # class-balanced: mean per-composition top-1 over this split's pairs (generalized prediction)
+        own_pairs = range(ls.num_seen) if split == "seen" else range(ls.num_seen, len(ls.pairs))
+        r["composition_class_balanced"] = {"top1": class_balanced_accuracy(scores, gt, own_pairs)}
         # closed-world: choose only among this split's own compositions (extra analysis)
         if split == "seen":
             r["composition_closed_world"] = topk_accuracy(scores[:, : ls.num_seen], gt)
@@ -179,6 +183,7 @@ def main():
         for key in ("crop", "disease", "composition", "composition_closed_world"):
             r = results[split][key]
             print(f"{split:>6} {key:<25} {r['top1']:.4f}   {r['top5']:.4f}")
+        print(f"{split:>6} {'composition_class_balanced':<25} {results[split]['composition_class_balanced']['top1']:.4f}")
     hm = results["harmonic_mean"]
     print(f"harmonic mean (composition)      {hm['top1']:.4f}   {hm['top5']:.4f}")
     c = results["calibrated"]
