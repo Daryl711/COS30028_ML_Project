@@ -1,0 +1,24 @@
+{
+  "models": [
+    {
+      "id": "proposed",
+      "name": "Proposed model (replace with its real name)",
+      "short_name": "Proposed",
+      "file": "model/proposed.onnx",
+      "input_size": 224,
+      "resize": "squash",
+      "mean": [0.485, 0.456, 0.406],
+      "std": [0.229, 0.224, 0.225],
+      "outputs": { "crop": "crop_logits", "disease": "disease_logits" },
+      "unseen_bias": 0,
+      "metrics": [
+        { "label": "Seen top-1", "value": "00.0%" },
+        { "label": "Unseen top-1", "value": "00.0%" },
+        { "label": "Harmonic mean", "value": "00.0%" }
+      ],
+      "about": [
+        "One paragraph per entry: backbone, training scheme, loss, key hyperparameters."
+      ]
+    }
+  ]
+}
