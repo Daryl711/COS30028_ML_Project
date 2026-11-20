@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Plant Disease Identifier</title>
+<meta name="description" content="Identify the crop and disease in a leaf photo, including crop-disease combinations never seen in training. Runs in your browser.">
+<link rel="stylesheet" href="style.css">
+<!-- ONNX Runtime Web is loaded by app.js only once a model is listed in model/config.json -->
+</head>
+<body>
+<!-- ===== Header: title and model status (#dot, #status, #progress are set by app.js) ===== -->
+<header class="hero">
+  <div class="wrap">
+    <p class="eyebrow">COS30082 · Out-of-Distribution Plant Disease Identification</p>
+    <h1>Plant Disease Identifier</h1>
+    <p class="lead">Upload a leaf photo to get the most likely crop and disease. The model can also suggest crop-disease combinations that never appeared in its training images.</p>
+    <div class="hero-row">
+      <label class="model-pick" id="modelPick" hidden>
+        <span>Model</span>
+        <select id="modelSel"></select>
+      </label>
+      <div class="status">
+        <span class="dot" id="dot"></span>
+        <span id="status">Loading…</span>
+        <div class="progress done" id="progressWrap"><i id="progress"></i></div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <!-- Shown only with ?demo in the URL: the results are random and exist to check the layout -->
+  <p class="demo-banner" id="demoBanner" hidden>Demo mode: the predictions below are random. They only show the page layout, not a model's output.</p>
+
+  <!-- ===== Upload + prediction card ===== -->
+  <section class="card">
+    <!-- The drop zone is a <label> for the hidden file input, so clicking it opens the file picker -->
+    <label class="drop" id="drop" tabindex="0">
+      <input type="file" id="file" accept="image/*" hidden>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V4m0 0L7.5 8.5M12 4l4.5 4.5M4 15v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <strong>Drag &amp; drop or click to upload a leaf photo</strong>
+      <small>JPG or PNG. The photo stays on your device.</small>
+    </label>
+
+    <!-- Results: hidden until the first image is chosen -->
+    <div id="result" hidden>
+      <div class="photo">
+        <img id="preview" alt="Uploaded leaf">
+        <p class="truth" id="truth" hidden></p>
+        <div class="btn-row">
+          <button type="button" id="uploadNew" class="btn primary">Upload new image</button>
+          <button type="button" id="reset" class="btn">Clear</button>
+        </div>
+      </div>
+
+      <!-- Shown when no model is deployed (and not in demo mode) -->
+      <div class="preds empty" id="noModel" hidden>
+        <p class="label">Prediction</p>
+        <h2>No model deployed yet</h2>
+        <p>Predictions will appear here once a model is added to <code>model/config.json</code>.</p>
+      </div>
+
+      <!-- Filled in by renderPrediction() in app.js -->
+      <div class="preds" id="preds" hidden>
+        <p class="label">Top match</p>
+        <h2 id="best">—</h2>
+        <div class="tags" id="bestTags"></div>
+        <div class="conf-row">
+          <span class="conf" id="bestConf"></span>
+          <span class="badge" id="badge"></span>
+          <div class="bar big"><i id="bestBar"></i></div>
+        </div>
+        <p class="heads" id="heads"></p>
+        <p class="label">Other candidates <span class="hint">(select one to see its training images)</span></p>
+        <ol id="top5" start="2"></ol>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Matching training images for the selected prediction ===== -->
+  <section class="card" id="gallery" hidden>
+    <h3 id="galleryTitle">Matching training images</h3>
+    <p class="note" id="galleryNote"></p>
+    <div id="galleryRows"></div>
+  </section>
+
+  <!-- ===== Sample test images (added by app.js); click one to try it ===== -->
+  <section class="card">
+    <h3>Sample test images</h3>
+    <p class="note">Seen samples come from crop-disease combinations the model was trained on. Unseen samples come from combinations it never saw in training.</p>
+    <div id="examples"></div>
+  </section>
+
+  <!-- ===== Test-set results of the selected model (from model/config.json) ===== -->
+  <section class="metrics" id="metrics" aria-label="Test set results"></section>
+
+  <p class="about-row"><button type="button" id="aboutBtn" class="btn">About the model</button></p>
+  <footer>COS30082 Applied Machine Learning · ML Project</footer>
+</main>
+
+<!-- ===== "About the model" dialog ===== -->
+<dialog id="about">
+  <form method="dialog"><button class="close" aria-label="Close">×</button></form>
+  <h2>About the model</h2>
+
+  <h4>The task</h4>
+  <p>Each image belongs to a crop-disease combination, such as <i>Tomato · Early blight</i>. The DPD-Small dataset has 55 crops, 175 diseases and 333 combinations. Training covers 323 of them. The other 10 are <b>unseen</b>: they never appear in training and can only be recognised by combining what the model learnt about the crop and about the disease separately.</p>
+
+  <h4>How a prediction is made</h4>
+  <p>The model scores the crop and the disease. Every valid combination gets the score log&nbsp;p(crop) + log&nbsp;p(disease), and the combinations are ranked by that score. Unseen combinations are therefore ranked alongside the seen ones.</p>
+
+  <h4>Matching training images</h4>
+  <p>For a seen combination, the gallery shows training images of that combination. An unseen combination has no training images, so the gallery shows training images that share its crop and training images that share its disease.</p>
+
+  <h4 id="aboutModelHead">Selected model</h4>
+  <div id="aboutModel"><p>No model deployed yet.</p></div>
+</dialog>
+
+<!-- Loaded last so every element above exists when app.js looks it up -->
+<script src="app.js"></script>
+</body>
+</html>
