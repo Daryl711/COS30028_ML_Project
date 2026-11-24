@@ -1,0 +1,70 @@
+{
+  "checkpoint": "outputs/s3_all/best.pt",
+  "experiment": "s3_all",
+  "epoch": 25,
+  "val": {
+    "val_loss": 0.6292730939648492,
+    "val_crop_acc": 0.9791356184798807,
+    "val_disease_acc": 0.8435171385991058,
+    "val_score": 0.9113263785394933
+  },
+  "protocol": "generalized_valid_pairs",
+  "num_pairs": 333,
+  "num_seen_pairs": 323,
+  "num_unseen_pairs": 10,
+  "test_seen": {
+    "n_images": 2000,
+    "n_skipped": 0,
+    "top1": 0.6485,
+    "top5": 0.886,
+    "crop_acc": 0.9105,
+    "disease_acc": 0.6665,
+    "class_balanced_acc": NaN
+  },
+  "test_unseen": {
+    "n_images": 1448,
+    "n_skipped": 0,
+    "top1": 0.05041436464088398,
+    "top5": 0.34392265193370164,
+    "crop_acc": 0.6837016574585635,
+    "disease_acc": 0.1042817679558011,
+    "class_balanced_acc": 0.06320123730965951
+  },
+  "test_hm_top1": 0.09355571189729929,
+  "test_hm_top5": 0.495503467854961,
+  "ausuc": {
+    "auc": 0.47166298342541435,
+    "best_hm": 0.5940165514375741,
+    "best_bias": 7.122795584201813,
+    "seen_at_best": 0.5475,
+    "unseen_at_best": 0.649171270718232
+  },
+  "leakage": {
+    "num_multi_crop_diseases": 42,
+    "baseline": "majority crop per disease, mapping from train split, scored on val",
+    "all_f_d": {
+      "n_images": 428,
+      "n_diseases": 30,
+      "probe_acc": 0.5097400820793434,
+      "probe_acc_std": 0.0916050416730585,
+      "chance": 0.5327102803738317,
+      "leak": -0.049156224350205,
+      "leak_std": 0.19603478918034517,
+      "chance_uniform": 0.20466750735442324,
+      "leak_uniform": 0.3835786636984155,
+      "leak_uniform_std": 0.11517829652394243
+    },
+    "base_N_v": {
+      "n_images": 428,
+      "n_diseases": 30,
+      "probe_acc": 0.7457729138166895,
+      "probe_acc_std": 0.08443875630931694,
+      "chance": 0.5327102803738317,
+      "leak": 0.45595403556771563,
+      "leak_std": 0.18069893850193822,
+      "chance_uniform": 0.20466750735442324,
+      "leak_uniform": 0.6803511882965387,
+      "leak_uniform_std": 0.10616786952641868
+    }
+  }
+}

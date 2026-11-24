@@ -1,0 +1,70 @@
+{
+  "checkpoint": "outputs/s3_r4_nokg/best.pt",
+  "experiment": "s3_r4_nokg",
+  "epoch": 28,
+  "val": {
+    "val_loss": 0.9341779529850517,
+    "val_crop_acc": 0.9657228017883756,
+    "val_disease_acc": 0.7630402384500745,
+    "val_score": 0.8643815201192251
+  },
+  "protocol": "generalized_valid_pairs",
+  "num_pairs": 333,
+  "num_seen_pairs": 323,
+  "num_unseen_pairs": 10,
+  "test_seen": {
+    "n_images": 2000,
+    "n_skipped": 0,
+    "top1": 0.58,
+    "top5": 0.851,
+    "crop_acc": 0.8905,
+    "disease_acc": 0.599,
+    "class_balanced_acc": NaN
+  },
+  "test_unseen": {
+    "n_images": 1448,
+    "n_skipped": 0,
+    "top1": 0.06422651933701658,
+    "top5": 0.32113259668508287,
+    "crop_acc": 0.6657458563535912,
+    "disease_acc": 0.11464088397790055,
+    "class_balanced_acc": 0.08161614155696571
+  },
+  "test_hm_top1": 0.11564684190214829,
+  "test_hm_top5": 0.4663019193423707,
+  "ausuc": {
+    "auc": 0.4028242403314917,
+    "best_hm": 0.5398352686330319,
+    "best_bias": 6.417884683609008,
+    "seen_at_best": 0.48,
+    "unseen_at_best": 0.6167127071823204
+  },
+  "leakage": {
+    "num_multi_crop_diseases": 42,
+    "baseline": "majority crop per disease, mapping from train split, scored on val",
+    "r4_f_d": {
+      "n_images": 428,
+      "n_diseases": 30,
+      "probe_acc": 0.7457729138166895,
+      "probe_acc_std": 0.08443875630931694,
+      "chance": 0.5327102803738317,
+      "leak": 0.45595403556771563,
+      "leak_std": 0.18069893850193822,
+      "chance_uniform": 0.20466750735442324,
+      "leak_uniform": 0.6803511882965387,
+      "leak_uniform_std": 0.10616786952641868
+    },
+    "base_N_v": {
+      "n_images": 428,
+      "n_diseases": 30,
+      "probe_acc": 0.7457729138166895,
+      "probe_acc_std": 0.08443875630931694,
+      "chance": 0.5327102803738317,
+      "leak": 0.45595403556771563,
+      "leak_std": 0.18069893850193822,
+      "chance_uniform": 0.20466750735442324,
+      "leak_uniform": 0.6803511882965387,
+      "leak_uniform_std": 0.10616786952641868
+    }
+  }
+}

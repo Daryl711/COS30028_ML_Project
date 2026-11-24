@@ -5,6 +5,28 @@ AdamW wd 0.05, LR 1e-3 for new modules, batch 64, 30 epochs, 2 warm-up + cosine,
 label smoothing 0.1, early stopping patience 8, seed 42, same evaluation). Only the model and the
 method-specific terms change between rows, so every row in `results.md` is a fair comparison.
 
+### Decision: one LR (1e-3) for every new module
+
+All new modules (heads, text classifiers, adapters, prompt tokens, discriminator) use LR 1e-3 in every run.
+This overrides the 5e-4 in `PROPOSED_METHOD.md` (`training_scheme.md` §6.2).
+
+- **Why:** 1e-3 is the head LR of the Stage 1 baseline, `baseline/MultiTaskBaseline/EffB0/config.yaml`
+  (`lr_head: 1.0e-3`, with `lr_backbone: 2.0e-4` for the fine-tuned EfficientNet). Every later stage
+  builds on that baseline, so it keeps the same recipe. With the LR held fixed, a difference between
+  rows comes from the module, not from per-run tuning, and no run gets an extra hyperparameter search
+  the others don't.
+- **Limit:** 1e-3 was carried over from the baseline, not chosen in an LR sweep (the EffB0 README lists
+  it as already matching the scheme). It also comes from linear heads trained next to a fine-tuned
+  backbone, while Stage 2 and 3 modules sit on a frozen one. With Adam, the step size is roughly the
+  same for every parameter, so how large the step is relative to the parameter depends on that
+  parameter's scale. The R4 prompt tokens have a per-dimension std of about 0.011, which makes 1e-3 a
+  large step for them (R4 without λ_kg drifts to ‖T − T⁰‖² ≈ 1.1–1.4 by epoch 5). So for those modules
+  1e-3 is a convention that keeps rows comparable, not a tuned value.
+- **Rule:** a different LR for one module (for example 1e-4 on the R4 tokens) is a named sweep sub-row
+  (`training_scheme.md` §6.1). It is reported next to the main row and does not replace it. If a sweep
+  LR wins on the val selection score, write that in `results.md`. If it is adopted, it applies to that
+  module in every run that contains it (R4, R4 + R5, All).
+
 Run every command from the repo root.
 
 ```bash

@@ -12,9 +12,6 @@ outputs/**
 !outputs/**/calibration_v2.json
 !outputs/**/cross_fit_v2.csv
 # Runs kept local only (must stay below the ! rules above, the last matching rule wins)
-outputs/indep_crop_dinov2/
-outputs/indep_disease_dinov2/
-outputs/indep_dinov2/eval/
 *.pt
 *.pth
 __pycache__/

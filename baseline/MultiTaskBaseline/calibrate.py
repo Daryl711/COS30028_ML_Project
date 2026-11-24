@@ -1,6 +1,6 @@
 """Post-hoc logit calibration (v2) on saved test logits. No retraining, works for any backbone.
 
-  python baseline/MultiTaskBaseline/calibrate.py --eval_dirs outputs/multitask_dinov2_50ep/eval
+  python baseline/MultiTaskBaseline/calibrate.py --eval_dirs outputs/multitask_effb0/eval
 
 Reads <eval_dir>/logits.npz (written by evaluate.py) and writes, in the same folder:
   calibration_v2.json        uncalibrated, bias-only, held-out (cross-fit) and all-test results + chosen config

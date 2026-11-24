@@ -1,0 +1,70 @@
+{
+  "checkpoint": "outputs\\s3_r5r6_uncond\\best.pt",
+  "experiment": "s3_r5r6_uncond",
+  "epoch": 23,
+  "val": {
+    "val_loss": 0.6691620930170948,
+    "val_crop_acc": 0.9791356184798807,
+    "val_disease_acc": 0.8464977645305514,
+    "val_score": 0.912816691505216
+  },
+  "protocol": "generalized_valid_pairs",
+  "num_pairs": 333,
+  "num_seen_pairs": 323,
+  "num_unseen_pairs": 10,
+  "test_seen": {
+    "n_images": 2000,
+    "n_skipped": 0,
+    "top1": 0.669,
+    "top5": 0.893,
+    "crop_acc": 0.92,
+    "disease_acc": 0.685,
+    "class_balanced_acc": NaN
+  },
+  "test_unseen": {
+    "n_images": 1448,
+    "n_skipped": 0,
+    "top1": 0.04834254143646409,
+    "top5": 0.3397790055248619,
+    "crop_acc": 0.6947513812154696,
+    "disease_acc": 0.09944751381215469,
+    "class_balanced_acc": 0.06374938291744299
+  },
+  "test_hm_top1": 0.09016936359645408,
+  "test_hm_top5": 0.4922579806662394,
+  "ausuc": {
+    "auc": 0.4674684046961326,
+    "best_hm": 0.5879607889175862,
+    "best_bias": 6.533979053497314,
+    "seen_at_best": 0.575,
+    "unseen_at_best": 0.6015193370165746
+  },
+  "leakage": {
+    "num_multi_crop_diseases": 42,
+    "baseline": "majority crop per disease, mapping from train split, scored on val",
+    "r5r6_f_d": {
+      "n_images": 428,
+      "n_diseases": 30,
+      "probe_acc": 0.48864569083447335,
+      "probe_acc_std": 0.11176298123168062,
+      "chance": 0.5327102803738317,
+      "leak": -0.09429822161422692,
+      "leak_std": 0.2391727798357965,
+      "chance_uniform": 0.20466750735442324,
+      "leak_uniform": 0.3570559308289182,
+      "leak_uniform_std": 0.14052359518207871
+    },
+    "base_N_v": {
+      "n_images": 428,
+      "n_diseases": 30,
+      "probe_acc": 0.7457729138166895,
+      "probe_acc_std": 0.08443875630931694,
+      "chance": 0.5327102803738317,
+      "leak": 0.45595403556771563,
+      "leak_std": 0.18069893850193822,
+      "chance_uniform": 0.20466750735442324,
+      "leak_uniform": 0.6803511882965387,
+      "leak_uniform_std": 0.10616786952641868
+    }
+  }
+}

@@ -31,6 +31,28 @@ python -m stage3.s3_r5r6.train --lambda_max 0.3 --experiment s3_r5r6_lam0.3   # 
 python -m stage3.s3_r5r6.train --unconditional --experiment s3_r5r6_uncond    # plain DANN ablation
 ```
 
+### Sweep + ablation in one go (`sweep.py`)
+
+`sweep.py` trains each optional row with the unchanged `train.py`, then scores it with `evaluate.py`.
+Each run is its own process. At the end it writes a table comparing every run with R5 and the main
+λ 0.1 run to `outputs/s3_r5r6_sweep_summary.md`.
+
+```bash
+python -m stage3.s3_r5r6.sweep                       # lam0, lam0.03, lam0.3, uncond (~45 min each)
+python -m stage3.s3_r5r6.sweep --runs uncond         # any subset: lam0 lam0.03 lam0.3 uncond
+python -m stage3.s3_r5r6.sweep --summary_only        # just rebuild the table
+```
+
+| Key | Experiment dir | Setting |
+|---|---|---|
+| `lam0` | `outputs/s3_r5r6_lam0/` | conditional, λ_max 0 (sanity: should match R5) |
+| `lam0.03` | `outputs/s3_r5r6_lam0.03/` | conditional, λ_max 0.03 |
+| `lam0.3` | `outputs/s3_r5r6_lam0.3/` | conditional, λ_max 0.3 |
+| `uncond` | `outputs/s3_r5r6_uncond/` | unconditional DANN, λ_max 0.1 |
+
+Runs that already have `eval/metrics.json` are skipped, so an interrupted sweep resumes where it left off.
+Pass `--force` to retrain them.
+
 `--lambda_max 0` is a sanity row: the discriminator still trains but no gradient reaches A_d, so it
 should reproduce R5.
 

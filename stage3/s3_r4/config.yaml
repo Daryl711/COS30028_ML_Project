@@ -1,0 +1,40 @@
+# Stage 3, run R4: 2b (frozen BioCLIP + taxonomy-text cosine heads) with learnable prompts.
+# Every value below is training_scheme.md §1-§5, identical to stage3/s3_r5/config.yaml. The "R4" lines are
+# the only method-specific settings (guide.md Stage 3). R8a logit adjustment is off (Stage 2 decision).
+experiment: s3_r4
+seed: 42
+output_dir: outputs
+
+data:
+  root: dataset
+  image_dir: DPD_Small_dataset          # original resolution, not DPD_Small_256
+  train_csv: DPD_Small_train.csv
+  test_seen_csv: DPD_Small_test_seen.csv
+  test_unseen_csv: DPD_Small_test_unseen.csv
+  text_dir: text                        # plant_descriptions.csv, diseases_descriptions.csv (DPD taxonomy)
+  val_fraction: 0.1
+  img_size: 224
+  num_workers: 4
+
+model:
+  backbone: hf-hub:imageomics/bioclip   # BioCLIP ViT-B/16, image and text encoders frozen
+  head_dropout: 0.3
+  n_ctx: 4                              # R4: CoOp context length M (= the 4 tokens of "a photo of a")
+  attr_dropout: 0.3                     # R4: CSP attribute dropout on the class-name tokens (training_scheme.md §6.1)
+  # CSP primitive tokens: one per subword of each class name (fixed by the class names, not configurable)
+  # logit scale: BioCLIP's pretrained value, fixed (read from the model, not configurable)
+
+r4:
+  lambda_kg: 8.0                        # R4: KgCoOp anchor weight (guide.md). 0 = the "without L_kg" sub-row
+
+train:
+  epochs: 30
+  batch_size: 64
+  warmup_epochs: 2
+  min_lr_ratio: 0.01
+  lr_new: 1.0e-3                        # prompt tokens (guide.md: new modules all use LR 1e-3, wd 0.05)
+  weight_decay: 5.0e-2                  # on the token deltas, so it pulls toward the pretrained tokens
+  label_smoothing: 0.1                  # classification heads only; L_kg is unsmoothed
+  grad_clip: 1.0
+  patience: 8
+  amp: true
