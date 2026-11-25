@@ -20,3 +20,6 @@ __pycache__/
 
 CLAUDE.md
 PROPOSED_METHOD.md
+
+# Proposed model ONNX (331 MB, over GitHub's 100 MB limit): hosted on Hugging Face only
+UserInterface/web/model/s3_all.onnx
