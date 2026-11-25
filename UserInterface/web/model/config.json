@@ -1,3 +1,116 @@
 {
-  "models": []
+  "models": [
+    {
+      "id": "effb0_independent",
+      "name": "Independent CNNs (EfficientNet-B0)",
+      "short_name": "Independent EffB0",
+      "role": "Baseline 1",
+      "benchmark_id": "s1_indep_effb0",
+      "file": "model/effb0_independent.onnx",
+      "gallery_embeddings": "model/effb0_independent_gallery.f16",
+      "unseen_bias": 6.5973,
+      "metrics": [
+        {
+          "label": "Seen top-1",
+          "value": "57.1%"
+        },
+        {
+          "label": "Unseen top-1",
+          "value": "65.3%"
+        },
+        {
+          "label": "Harmonic mean",
+          "value": "60.9%"
+        },
+        {
+          "label": "AUSUC",
+          "value": "48.2%"
+        }
+      ],
+      "input_size": 224,
+      "resize": "center_crop",
+      "crop_pct": 0.875,
+      "mean": [
+        0.485,
+        0.456,
+        0.406
+      ],
+      "std": [
+        0.229,
+        0.224,
+        0.225
+      ],
+      "outputs": {
+        "crop": "crop_logits",
+        "disease": "disease_logits",
+        "heatmap": "heatmap",
+        "embedding": "embedding"
+      },
+      "heatmap_label": "Disease activation map (CAM)",
+      "gallery_dtype": "float16",
+      "about": [
+        "Two separate EfficientNet-B0 networks (ImageNet-pretrained, fine-tuned end to end): one classifies the crop (55 classes), the other the disease (175 classes). Neither sees the other's labels.",
+        "Training (Stage 1 re-run, outputs/s1_crop_effb0 and s1_disease_effb0): 30 epochs max with early stopping (patience 8), AdamW (backbone LR 2e-4, head LR 1e-3, weight decay 0.05), 2 warm-up epochs, label smoothing 0.1, dropout 0.3, drop-path 0.2, gradient clipping 1.0, mixed precision, seed 42. Input 224 × 224 (resize 256, centre crop).",
+        "A combination is scored log p(crop) + log p(disease) over the 333 valid pairs.",
+        "Unseen combinations get a calibration bias of +6.60 on their score. It is the bias that maximises the harmonic mean of seen and unseen accuracy, found by a sweep on the test sets (the standard compositional zero-shot protocol), so the accuracies above are at that bias. Without it, unseen combinations almost never rank first.",
+        "The heatmap is the class activation map of the disease network, weighted by its disease probabilities. The gallery is ranked by cosine similarity of both networks' pooled features."
+      ]
+    },
+    {
+      "id": "effb0_multitask",
+      "name": "Multi-task CNN (EfficientNet-B0)",
+      "short_name": "Multi-task EffB0",
+      "role": "Baseline 2",
+      "benchmark_id": "s1_mt_effb0",
+      "file": "model/effb0_multitask.onnx",
+      "gallery_embeddings": "model/effb0_multitask_gallery.f16",
+      "unseen_bias": 6.5757,
+      "metrics": [
+        {
+          "label": "Seen top-1",
+          "value": "58.2%"
+        },
+        {
+          "label": "Unseen top-1",
+          "value": "62.6%"
+        },
+        {
+          "label": "Harmonic mean",
+          "value": "60.3%"
+        },
+        {
+          "label": "AUSUC",
+          "value": "46.7%"
+        }
+      ],
+      "input_size": 224,
+      "resize": "center_crop",
+      "crop_pct": 0.875,
+      "mean": [
+        0.485,
+        0.456,
+        0.406
+      ],
+      "std": [
+        0.229,
+        0.224,
+        0.225
+      ],
+      "outputs": {
+        "crop": "crop_logits",
+        "disease": "disease_logits",
+        "heatmap": "heatmap",
+        "embedding": "embedding"
+      },
+      "heatmap_label": "Disease activation map (CAM)",
+      "gallery_dtype": "float16",
+      "about": [
+        "One EfficientNet-B0 backbone (ImageNet-pretrained, fine-tuned end to end) shared by two linear heads: crop (55 classes) and disease (175 classes), trained jointly with the sum of the two cross-entropy losses.",
+        "Training (Stage 1 re-run, outputs/s1_mt_effb0): 30 epochs max with early stopping (patience 8), AdamW (backbone LR 2e-4, head LR 1e-3, weight decay 0.05), 2 warm-up epochs, label smoothing 0.1, dropout 0.3, drop-path 0.2, gradient clipping 1.0, mixed precision, seed 42. Input 224 × 224 (resize 256, centre crop).",
+        "A combination is scored log p(crop) + log p(disease) over the 333 valid pairs.",
+        "Unseen combinations get a calibration bias of +6.58 on their score. It is the bias that maximises the harmonic mean of seen and unseen accuracy, found by a sweep on the test sets (the standard compositional zero-shot protocol), so the accuracies above are at that bias. Without it, unseen combinations almost never rank first.",
+        "The heatmap is the class activation map of the disease head, weighted by its disease probabilities. The gallery is ranked by cosine similarity of the pooled backbone feature."
+      ]
+    }
+  ]
 }
