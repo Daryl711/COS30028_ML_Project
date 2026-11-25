@@ -98,21 +98,10 @@
         <div class="pan" id="pan">
           <div class="stage" id="stage">
             <img id="preview" alt="Uploaded leaf" draggable="false">
-            <canvas id="heat" hidden></canvas>
           </div>
         </div>
       </div>
       <p class="hint-line">Scroll or use + / − to zoom, drag to pan, double-click to toggle 2×.</p>
-
-      <div class="heat-ctl">
-        <label class="switch">
-          <input type="checkbox" id="heatToggle" disabled>
-          <span>Attention heatmap</span>
-        </label>
-        <input type="range" id="heatOpacity" min="10" max="90" value="55" aria-label="Heatmap opacity" disabled>
-        <p class="hint-line" id="heatNote">The selected model does not export an attention map.</p>
-        <div class="heat-legend" id="heatLegend" hidden><span>low</span><i></i><span>high</span></div>
-      </div>
 
       <div class="truth" id="truth" hidden></div>
 

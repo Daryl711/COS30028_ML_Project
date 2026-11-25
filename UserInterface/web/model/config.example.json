@@ -2,9 +2,9 @@
   "models": [
     {
       "id": "proposed",
-      "name": "Proposed model (replace with its real name)",
-      "short_name": "Proposed",
-      "role": "Proposed",
+      "name": "Custom approach model (replace with its real name)",
+      "short_name": "Custom",
+      "role": "Custom approach",
       "benchmark_id": "s3_r5",
       "file": "model/proposed.onnx",
       "input_size": 224,
@@ -22,10 +22,8 @@
       "outputs": {
         "crop": "crop_logits",
         "disease": "disease_logits",
-        "heatmap": "attention",
         "embedding": "embedding"
       },
-      "heatmap_label": "Grad-CAM heatmap",
       "gallery_embeddings": "model/proposed_gallery.f32",
       "unseen_bias": 0,
       "metrics": [

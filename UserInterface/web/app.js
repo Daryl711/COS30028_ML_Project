@@ -10,10 +10,9 @@
 // Flow: init() loads data/classes.json and model/config.json -> user picks an
 //       image -> showImage() -> analyse() -> runModel() (preprocess + session.run)
 //       -> scoreCompositions() -> similarities() -> renderPrediction()
-//       -> renderGallery() / drawHeat() / renderCompare().
+//       -> renderGallery() / renderCompare().
 //
-// Optional model outputs (see model/README.md):
-//   outputs.heatmap    [1, h, w] or [1, 1, h, w] attention / Grad-CAM map -> heatmap overlay
+// Optional model output (see model/README.md):
 //   outputs.embedding  [1, D] image embedding + gallery_embeddings file   -> similarity ranking
 
 // ---- Settings ---------------------------------------------------------------
@@ -109,7 +108,6 @@ async function selectModel(id) {
     current = entry;
     setStatus("ready", `${cfg.name} ready`);
     renderModelInfo(cfg);
-    updateHeatControls();
     fillCompareSel();
     if (lastImg) analyse(lastImg);
   } catch (e) {
@@ -322,10 +320,8 @@ async function forward(entry, img) {
   const names = cfg.outputs ?? {};
   const get = (key) => (names[key] && res[names[key]] ? res[names[key]] : null);
   const arr = (key) => (get(key) ? Array.from(get(key).data) : null);
-  const heat = get("heatmap");
   return {
     raw: { crop: arr("crop"), disease: arr("disease"), composition: arr("composition") },
-    heat: heat ? { data: Float32Array.from(heat.data), dims: heat.dims } : null,
     emb: get("embedding") ? normalise(Float32Array.from(get("embedding").data)) : null,
     ms: performance.now() - t0,
   };
@@ -351,7 +347,7 @@ function similarities(emb, gallery) {
 async function runModel(entry, img) {
   const f = await forward(entry, img);
   const scores = scoreCompositions(f.raw, entry.cfg);
-  return { model: entry.cfg, scores, heat: f.heat, sims: similarities(f.emb, entry.gallery) };
+  return { model: entry.cfg, scores, sims: similarities(f.emb, entry.gallery) };
 }
 
 // ---- Analysis pipeline -------------------------------------------------------
@@ -410,13 +406,12 @@ async function analyse(img) {
   await pipe.run(2);
   const sims = entry ? similarities(f.emb, entry.gallery) : null;
   if (token !== imgToken || entry !== current) return; // a newer image or model took over
-  primary = { model: entry ? entry.cfg : null, scores, heat: f ? f.heat : null, sims };
+  primary = { model: entry ? entry.cfg : null, scores, sims };
   if (entry) results.set(entry.cfg.id, primary);
   renderPrediction(primary);
   pipe.done(2);
   pipe.finish();
 
-  drawHeat(primary.heat, entry ? entry.cfg : null);
   if (compareOn) renderCompare();
 }
 
@@ -564,80 +559,6 @@ function renderGallery(k, isTop) {
     : `<p class="note">No training images share this.</p>`);
   $("gallery").hidden = false;
 }
-
-// ---- Heatmap overlay ------------------------------------------------------------
-// Colour ramp for the overlay: transparent -> yellow -> orange -> red
-const HEAT_STOPS = [[253, 224, 71], [249, 115, 22], [220, 38, 38]];
-
-function updateHeatControls() {
-  const cfg = current?.cfg;
-  const has = Boolean(cfg?.outputs?.heatmap);
-  $("heatToggle").disabled = !has;
-  $("heatOpacity").disabled = !has;
-  $("heatToggle").nextElementSibling.textContent = cfg?.heatmap_label ?? "Attention heatmap";
-  $("heatNote").textContent = has
-    ? "Highlights the image regions that drove the prediction."
-    : cfg ? "The selected model does not export an attention map." : "Available once a model with an attention output is deployed.";
-  if (!has) $("heatToggle").checked = false;
-  syncHeat();
-}
-
-function drawHeat(heat, cfg) {
-  const cv = $("heat");
-  cv.dataset.ready = "";
-  if (!heat || !cfg) { syncHeat(); return; }
-  const dims = heat.dims;
-  // The map is on the stored pixel grid; turn it to match the upright display
-  const { v, h, w } = orientGrid(heat.data.subarray(0, dims[dims.length - 2] * dims[dims.length - 1]),
-    dims[dims.length - 2], dims[dims.length - 1], lastImg.orientation ?? 1);
-  let lo = Infinity, hi = -Infinity;
-  for (const x of v) { if (x < lo) lo = x; if (x > hi) hi = x; }
-  cv.width = w; cv.height = h;
-  const ctx = cv.getContext("2d");
-  const im = ctx.createImageData(w, h);
-  for (let i = 0; i < v.length; i++) {
-    const t = hi > lo ? (v[i] - lo) / (hi - lo) : 0;
-    const seg = Math.min(t * 2, 1.999), a = HEAT_STOPS[Math.floor(seg)], b = HEAT_STOPS[Math.floor(seg) + 1], f = seg % 1;
-    for (let c = 0; c < 3; c++) im.data[i * 4 + c] = a[c] + (b[c] - a[c]) * f;
-    im.data[i * 4 + 3] = 255 * Math.pow(Math.max(0, (t - 0.12) / 0.88), 1.2);
-  }
-  ctx.putImageData(im, 0, 0);
-
-  // Place the map over the part of the image the model saw
-  const img = lastImg, W = img.naturalWidth, H = img.naturalHeight;
-  if (cfg.resize === "center_crop") {
-    const side = Math.min(W, H) * (cfg.crop_pct ?? 0.875);
-    Object.assign(cv.style, { left: `${(W - side) / 2 / W * 100}%`, top: `${(H - side) / 2 / H * 100}%`, width: `${side / W * 100}%`, height: `${side / H * 100}%` });
-  } else {
-    Object.assign(cv.style, { left: "0", top: "0", width: "100%", height: "100%" });
-  }
-  cv.dataset.ready = "1";
-  syncHeat();
-}
-
-// Applies EXIF orientation o to an h x w grid (row-major), as the browser does to the photo
-function orientGrid(src, h, w, o) {
-  if (o <= 1 || o > 8) return { v: src, h, w };
-  const swap = o >= 5, H = swap ? w : h, W = swap ? h : w, v = new Float32Array(src.length);
-  for (let y = 0; y < h; y++) {
-    for (let x = 0; x < w; x++) {
-      const [X, Y] = { 2: [w - 1 - x, y], 3: [w - 1 - x, h - 1 - y], 4: [x, h - 1 - y], 5: [y, x],
-                       6: [h - 1 - y, x], 7: [h - 1 - y, w - 1 - x], 8: [y, w - 1 - x] }[o];
-      v[Y * W + X] = src[y * w + x];
-    }
-  }
-  return { v, h: H, w: W };
-}
-
-function syncHeat() {
-  const on = $("heatToggle").checked && $("heat").dataset.ready === "1";
-  $("heat").hidden = !on;
-  $("heat").style.opacity = $("heatOpacity").value / 100;
-  $("heatLegend").hidden = !on;
-}
-
-$("heatToggle").addEventListener("change", syncHeat);
-$("heatOpacity").addEventListener("input", syncHeat);
 
 // ---- Zoom / pan inspector -------------------------------------------------------
 const view = { s: 1, x: 0, y: 0 };
@@ -821,7 +742,6 @@ function showImage(src, truth = null) {
   lastTruth = truth;
   $("dropError").hidden = true;
   showWorkspace();
-  drawHeat(null, null);
   renderTruth(null);
   $("preview").src = src;
   $("examples").querySelectorAll("button").forEach((b) => b.setAttribute("aria-current", String(b.dataset.file === src)));
