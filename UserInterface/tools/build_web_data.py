@@ -31,7 +31,8 @@ WEB = REPO / "UserInterface" / "web"
 
 GALLERY_PER_CLASS = 6   # training thumbnails kept per seen composition
 THUMB_SIZE = 220        # longest side of a gallery thumbnail, in pixels
-EXAMPLE_SIZE = 512      # longest side of a sample image
+EXAMPLE_SIZE = 512      # longest side of a sample image whose original is too large to copy
+EXAMPLE_MAX_KB = 600    # originals up to this size are copied unchanged
 N_EXAMPLES = 4          # sample images per split (seen and unseen)
 
 # CSV columns (no header row):
@@ -62,6 +63,25 @@ def save_resized(src, dst, size):
         im = ImageOps.exif_transpose(im).convert("RGB")
         im.thumbnail((size, size), Image.LANCZOS)
         im.save(dst, "JPEG", quality=80, optimize=True)
+
+
+def save_example(src, dst_dir):
+    """Sample test image for the page. The model must see the pixels the evaluation saw,
+    so small originals are copied byte for byte. Large ones are downscaled without
+    applying the EXIF rotation (evaluation ignored it); the orientation tag is kept so
+    the browser still shows them upright. Returns the path relative to the page."""
+    if src.stat().st_size <= EXAMPLE_MAX_KB * 1024:
+        shutil.copyfile(src, dst_dir / src.name)
+        return f"{dst_dir.name}/{src.name}"
+    with Image.open(src) as im:
+        orientation = im.getexif().get(0x0112)
+        im = im.convert("RGB")
+        im.thumbnail((EXAMPLE_SIZE, EXAMPLE_SIZE), Image.LANCZOS)
+        exif = Image.Exif()
+        if orientation:
+            exif[0x0112] = orientation
+        im.save(dst_dir / f"{src.stem}.jpg", "JPEG", quality=90, exif=exif.tobytes())
+    return f"{dst_dir.name}/{src.stem}.jpg"
 
 
 def main():
@@ -117,9 +137,7 @@ def main():
             by_comp[int(r[3])].append(r[0])
         for k in spread(sorted(by_comp), N_EXAMPLES):
             fn = sorted(by_comp[k])[0]
-            out = f"examples/{Path(fn).stem}.jpg"
-            save_resized(IMAGES / fn, WEB / out, EXAMPLE_SIZE)
-            examples.append({"file": out, "truth": k, "split": split})
+            examples.append({"file": save_example(IMAGES / fn, WEB / "examples"), "truth": k, "split": split})
 
     data = {
         "crops": [pretty(crops[i]) for i in range(n_crops)],
