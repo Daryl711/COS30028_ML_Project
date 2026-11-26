@@ -1,3 +1,166 @@
 {
-  "models": []
+  "models": [
+    {
+      "id": "s3_all",
+      "name": "BioCLIP + learnt prompts, adapters and crop-invariance (S3 All)",
+      "short_name": "Custom S3 All",
+      "role": "Custom approach",
+      "benchmark_id": "s3_all",
+      "file": "model/s3_all.onnx",
+      "gallery_embeddings": "model/s3_all_gallery.f16",
+      "gallery_dtype": "float16",
+      "unseen_bias": 7.1228,
+      "metrics": [
+        {
+          "label": "Seen top-1",
+          "value": "54.8%"
+        },
+        {
+          "label": "Unseen top-1",
+          "value": "64.9%"
+        },
+        {
+          "label": "Harmonic mean",
+          "value": "59.4%"
+        },
+        {
+          "label": "AUSUC",
+          "value": "47.2%"
+        }
+      ],
+      "input_size": 224,
+      "resize": "center_crop",
+      "crop_pct": 0.875,
+      "mean": [
+        0.48145466,
+        0.4578275,
+        0.40821073
+      ],
+      "std": [
+        0.26862954,
+        0.26130258,
+        0.27577711
+      ],
+      "outputs": {
+        "crop": "crop_logits",
+        "disease": "disease_logits",
+        "embedding": "embedding"
+      },
+      "about": [
+        "A frozen BioCLIP ViT-B/16 image encoder with three trainable additions (Stage 3 run All, outputs/s3_all). R4: the crop and disease class vectors come from learnable prompts (4 context tokens, CSP attribute dropout 0.3) through the frozen BioCLIP text encoder, held near the hand-written taxonomy prompts by a KgCoOp anchor (λ_kg = 8). R5: separate crop and disease adapters (512 → 256 → 512 residual MLPs) on the image feature. R6: a crop discriminator behind a gradient reversal layer (conditional on the crops that carry each disease, λ_max 0.1 with a DANN ramp) pushes crop information out of the disease feature.",
+        "Classification is cosine similarity between each adapted image feature and the class vectors, scaled by BioCLIP's logit scale (100). The text encoder and discriminator are only needed in training, so the page runs the image encoder and adapters only.",
+        "Training: 30 epochs (best epoch 25), batch 64, AdamW (LR 1e-3 for every new module, weight decay 0.05), 2 warm-up epochs, label smoothing 0.1, gradient clipping 1.0, mixed precision, seed 42. Input 224 × 224 (resize 256, centre crop), CLIP normalisation.",
+        "A combination is scored log p(crop) + log p(disease) over the 333 valid pairs. Unseen combinations get a calibration bias of +7.12 on their score, the bias that maximises the harmonic mean of seen and unseen accuracy (the standard compositional zero-shot protocol), so the accuracies above are at that bias.",
+        "The deployed file is best.pt exported to ONNX in fp32 (331 MB, so the first load takes a while). The gallery is ranked by cosine similarity of the adapted crop and disease features."
+      ]
+    },
+    {
+      "id": "effb0_independent",
+      "name": "Independent CNNs (EfficientNet-B0)",
+      "short_name": "Independent EffB0",
+      "role": "Baseline 1",
+      "benchmark_id": "s1_indep_effb0",
+      "file": "model/effb0_independent.onnx",
+      "gallery_embeddings": "model/effb0_independent_gallery.f16",
+      "unseen_bias": 6.5973,
+      "metrics": [
+        {
+          "label": "Seen top-1",
+          "value": "57.1%"
+        },
+        {
+          "label": "Unseen top-1",
+          "value": "65.3%"
+        },
+        {
+          "label": "Harmonic mean",
+          "value": "60.9%"
+        },
+        {
+          "label": "AUSUC",
+          "value": "48.2%"
+        }
+      ],
+      "input_size": 224,
+      "resize": "center_crop",
+      "crop_pct": 0.875,
+      "mean": [
+        0.485,
+        0.456,
+        0.406
+      ],
+      "std": [
+        0.229,
+        0.224,
+        0.225
+      ],
+      "outputs": {
+        "crop": "crop_logits",
+        "disease": "disease_logits",
+        "embedding": "embedding"
+      },
+      "gallery_dtype": "float16",
+      "about": [
+        "Two separate EfficientNet-B0 networks (ImageNet-pretrained, fine-tuned end to end): one classifies the crop (55 classes), the other the disease (175 classes). Neither sees the other's labels.",
+        "Training (Stage 1 re-run, outputs/s1_crop_effb0 and s1_disease_effb0): 30 epochs max with early stopping (patience 8), AdamW (backbone LR 2e-4, head LR 1e-3, weight decay 0.05), 2 warm-up epochs, label smoothing 0.1, dropout 0.3, drop-path 0.2, gradient clipping 1.0, mixed precision, seed 42. Input 224 × 224 (resize 256, centre crop).",
+        "A combination is scored log p(crop) + log p(disease) over the 333 valid pairs.",
+        "Unseen combinations get a calibration bias of +6.60 on their score. It is the bias that maximises the harmonic mean of seen and unseen accuracy, found by a sweep on the test sets (the standard compositional zero-shot protocol), so the accuracies above are at that bias. Without it, unseen combinations almost never rank first.",
+        "The gallery is ranked by cosine similarity of both networks' pooled features."
+      ]
+    },
+    {
+      "id": "effb0_multitask",
+      "name": "Multi-task CNN (EfficientNet-B0)",
+      "short_name": "Multi-task EffB0",
+      "role": "Baseline 2",
+      "benchmark_id": "s1_mt_effb0",
+      "file": "model/effb0_multitask.onnx",
+      "gallery_embeddings": "model/effb0_multitask_gallery.f16",
+      "unseen_bias": 6.5757,
+      "metrics": [
+        {
+          "label": "Seen top-1",
+          "value": "58.2%"
+        },
+        {
+          "label": "Unseen top-1",
+          "value": "62.6%"
+        },
+        {
+          "label": "Harmonic mean",
+          "value": "60.3%"
+        },
+        {
+          "label": "AUSUC",
+          "value": "46.7%"
+        }
+      ],
+      "input_size": 224,
+      "resize": "center_crop",
+      "crop_pct": 0.875,
+      "mean": [
+        0.485,
+        0.456,
+        0.406
+      ],
+      "std": [
+        0.229,
+        0.224,
+        0.225
+      ],
+      "outputs": {
+        "crop": "crop_logits",
+        "disease": "disease_logits",
+        "embedding": "embedding"
+      },
+      "gallery_dtype": "float16",
+      "about": [
+        "One EfficientNet-B0 backbone (ImageNet-pretrained, fine-tuned end to end) shared by two linear heads: crop (55 classes) and disease (175 classes), trained jointly with the sum of the two cross-entropy losses.",
+        "Training (Stage 1 re-run, outputs/s1_mt_effb0): 30 epochs max with early stopping (patience 8), AdamW (backbone LR 2e-4, head LR 1e-3, weight decay 0.05), 2 warm-up epochs, label smoothing 0.1, dropout 0.3, drop-path 0.2, gradient clipping 1.0, mixed precision, seed 42. Input 224 × 224 (resize 256, centre crop).",
+        "A combination is scored log p(crop) + log p(disease) over the 333 valid pairs.",
+        "Unseen combinations get a calibration bias of +6.58 on their score. It is the bias that maximises the harmonic mean of seen and unseen accuracy, found by a sweep on the test sets (the standard compositional zero-shot protocol), so the accuracies above are at that bias. Without it, unseen combinations almost never rank first.",
+        "The gallery is ranked by cosine similarity of the pooled backbone feature."
+      ]
+    }
+  ]
 }

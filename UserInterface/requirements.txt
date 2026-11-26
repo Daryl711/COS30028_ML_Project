@@ -1,8 +1,0 @@
-gradio>=4.0.0
-torch
-torchvision
-timm
-Pillow
-matplotlib
-numpy
-accelerate
