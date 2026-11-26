@@ -1,9 +1,9 @@
 """Evaluate an R4 checkpoint. Repo root:
 
-  python -m stage3.s3_r4.evaluate --checkpoint outputs/s3_r4/best.pt
+  python -m stage3.stage3a.evaluate --checkpoint outputs/stage3a/best.pt
 
 The checkpoint's "model" entry holds the class vectors T_c, T_d that the learned prompts produced at that
-epoch, so prediction needs no text encoder. This runs stage3/s3_r5/evaluate.py's protocol unchanged
+epoch, so prediction needs no text encoder. This runs stage3/stage3b/evaluate.py's protocol unchanged
 (generalized valid-pair test metrics, HM, AUSUC, crop-leakage probe).
 
 R4 has no adapters, so its disease feature is N(v): "leakage.r4_f_d" equals "leakage.base_N_v" by
@@ -11,7 +11,7 @@ construction (guide.md: "For the base and R4 the probed feature is N(v)").
 """
 import argparse
 
-from stage3.s3_r5.evaluate import run
+from stage3.stage3b.evaluate import run
 
 from .model import TextHeadNet
 

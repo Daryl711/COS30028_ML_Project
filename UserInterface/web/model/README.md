@@ -4,14 +4,14 @@
 
 | File | Model | Source checkpoints |
 |---|---|---|
-| `s3_all.onnx` (331 MB, fp32) | Custom approach: S3 All, frozen BioCLIP ViT-B/16 + learnt prompts (R4), crop / disease adapters (R5), crop-invariance GRL (R6) | `outputs/s3_all/best.pt` |
-| `effb0_independent.onnx` (32 MB) | Baseline 1: independent EfficientNet-B0 crop + disease networks | `outputs/s1_crop_effb0/best.pt`, `outputs/s1_disease_effb0/best.pt` |
-| `effb0_multitask.onnx` (16 MB) | Baseline 2: multi-task EfficientNet-B0 | `outputs/s1_mt_effb0/best.pt` |
+| `s3_all.onnx` (331 MB, fp32) | Custom approach: S3 All, frozen BioCLIP ViT-B/16 + learnt prompts (R4), crop / disease adapters (R5), crop-invariance GRL (R6) | `outputs/stage3e/best.pt` |
+| `effb0_independent.onnx` (32 MB) | Baseline 1: independent EfficientNet-B0 crop + disease networks | `outputs/stage1b_crop/best.pt`, `outputs/stage1b_disease/best.pt` |
+| `effb0_multitask.onnx` (16 MB) | Baseline 2: multi-task EfficientNet-B0 | `outputs/stage1a/best.pt` |
 | `*_gallery.f16` | Gallery embeddings (float16) for the similarity-ranked training matches | built from the ONNX files |
 
 Each file returns `crop_logits`, `disease_logits` and `embedding`.
 
-`s3_all.onnx` is over GitHub's 100 MB file limit, so it is gitignored and hosted on Hugging Face only (rebuild it with `export_s3_all_onnx.py`). It is fp32 so it matches `best.pt` exactly: its full test-set accuracy reproduces `outputs/s3_all/eval/metrics.json` (calibrated HM 59.3% vs 59.4%). int8 quantisation lost 1.9 points of HM and was not used. `unseen_bias` in `config.json` is each run's calibrated best bias from `outputs/<run>/eval/metrics.json`.
+`s3_all.onnx` is over GitHub's 100 MB file limit, so it is gitignored and hosted on Hugging Face only (rebuild it with `export_s3_all_onnx.py`). It is fp32 so it matches `best.pt` exactly: its full test-set accuracy reproduces `outputs/stage3e/eval/metrics.json` (calibrated HM 59.3% vs 59.4%). int8 quantisation lost 1.9 points of HM and was not used. `unseen_bias` in `config.json` is each run's calibrated best bias from `outputs/<run>/eval/metrics.json`.
 
 To rebuild them (from the repo root; needs `onnx` and `onnxruntime`):
 
@@ -61,7 +61,7 @@ The ONNX file may return one extra output; a model without it still works.
 | `crop_pct` | For `center_crop` only. Default 0.875 |
 | `mean`, `std` | Normalisation. Defaults to ImageNet. CLIP/BioCLIP use `[0.4815, 0.4578, 0.4082]` / `[0.2686, 0.2613, 0.2758]` |
 | `role` | Optional group shown before the name, e.g. `Custom approach`, `Baseline 1`, `Baseline 2` |
-| `benchmark_id` | Optional run folder in `outputs/` (e.g. `s3_r5`); marks that row as deployed in the benchmarks dialog |
+| `benchmark_id` | Optional run folder in `outputs/` (e.g. `stage3b`); marks that row as deployed in the benchmarks dialog |
 | `outputs` | ONNX output names: `crop` and `disease`, or `composition`; optionally `embedding` |
 | `gallery_embeddings` | Optional float32 file from `export_gallery_embeddings.py` (one row per gallery thumbnail) |
 | `unseen_bias` | Added to unseen compositions' scores (calibration). Default 0 |

@@ -1,0 +1,70 @@
+{
+  "checkpoint": "outputs/stage3b/best.pt",
+  "experiment": "stage3b",
+  "epoch": 19,
+  "val": {
+    "val_loss": 0.6272802440563703,
+    "val_crop_acc": 0.977645305514158,
+    "val_disease_acc": 0.8539493293591655,
+    "val_score": 0.9157973174366617
+  },
+  "protocol": "generalized_valid_pairs",
+  "num_pairs": 333,
+  "num_seen_pairs": 323,
+  "num_unseen_pairs": 10,
+  "test_seen": {
+    "n_images": 2000,
+    "n_skipped": 0,
+    "top1": 0.657,
+    "top5": 0.8955,
+    "crop_acc": 0.9165,
+    "disease_acc": 0.675,
+    "class_balanced_acc": NaN
+  },
+  "test_unseen": {
+    "n_images": 1448,
+    "n_skipped": 0,
+    "top1": 0.052486187845303865,
+    "top5": 0.2914364640883978,
+    "crop_acc": 0.7016574585635359,
+    "disease_acc": 0.10220994475138122,
+    "class_balanced_acc": 0.07256461943884802
+  },
+  "test_hm_top1": 0.0972067561148446,
+  "test_hm_top5": 0.43975623209385784,
+  "ausuc": {
+    "auc": 0.4895719958563536,
+    "best_hm": 0.6012181797945245,
+    "best_bias": 7.258103523254395,
+    "seen_at_best": 0.5435,
+    "unseen_at_best": 0.6726519337016574
+  },
+  "leakage": {
+    "num_multi_crop_diseases": 42,
+    "baseline": "majority crop per disease, mapping from train split, scored on val",
+    "r5_f_d": {
+      "n_images": 428,
+      "n_diseases": 30,
+      "probe_acc": 0.5237482900136798,
+      "probe_acc_std": 0.08759974719737001,
+      "chance": 0.5327102803738317,
+      "leak": -0.019178659370725028,
+      "leak_std": 0.18746345900237182,
+      "chance_uniform": 0.20466750735442324,
+      "leak_uniform": 0.40119168474793887,
+      "leak_uniform_std": 0.1101422964702223
+    },
+    "base_N_v": {
+      "n_images": 428,
+      "n_diseases": 30,
+      "probe_acc": 0.7457729138166895,
+      "probe_acc_std": 0.08443875630931694,
+      "chance": 0.5327102803738317,
+      "leak": 0.45595403556771563,
+      "leak_std": 0.18069893850193822,
+      "chance_uniform": 0.20466750735442324,
+      "leak_uniform": 0.6803511882965387,
+      "leak_uniform_std": 0.10616786952641868
+    }
+  }
+}

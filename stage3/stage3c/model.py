@@ -22,7 +22,7 @@ import torch
 import torch.nn.functional as F
 from torch import nn
 
-from stage3.s3_r5.model import R5Net
+from stage3.stage3b.model import R5Net
 
 
 class _GradReverse(torch.autograd.Function):

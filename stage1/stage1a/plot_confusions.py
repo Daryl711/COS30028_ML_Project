@@ -3,7 +3,7 @@
 evaluate.py calls plot_all() automatically. To redraw from a finished evaluation
 without running the model again:
 
-  python baseline/MultiTaskBaseline/EffB0/plot_confusions.py outputs/s1_mt_effb0/eval
+  python stage1/stage1a/plot_confusions.py outputs/stage1a/eval
 
 Writes into that folder:
   confusion_seen_crops.png        all 55 crops, % of each true crop, empty cells left blank
@@ -173,7 +173,7 @@ def plot_all(cm, ls, out_dir):
 def main():
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     p.add_argument("eval_dir", help="folder holding confusion_seen_compositions.npy")
-    p.add_argument("--config", default="configs/baseline.yaml", help="for the dataset paths")
+    p.add_argument("--config", default=os.path.join(os.path.dirname(os.path.abspath(__file__)), "config.yaml"), help="for the dataset paths")
     args = p.parse_args()
 
     with open(args.config) as f:

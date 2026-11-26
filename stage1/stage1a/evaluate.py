@@ -1,13 +1,13 @@
 """Evaluate baselines on DPD-Small test_seen and test_unseen.
 
   # multi-task baseline
-  python baseline/MultiTaskBaseline/EffB0/evaluate.py --checkpoints outputs/s1_mt_effb0/best.pt --out outputs/s1_mt_effb0/eval
+  python stage1/stage1a/evaluate.py --checkpoints outputs/stage1a/best.pt --out outputs/stage1a/eval
   # independent baseline: pass the crop model and the disease model together
-  python baseline/MultiTaskBaseline/EffB0/evaluate.py --checkpoints outputs/s1_crop_effb0/best.pt outputs/s1_disease_effb0/best.pt \
-                              --out outputs/s1_indep_effb0/eval
+  python stage1/stage1a/evaluate.py --checkpoints outputs/stage1b_crop/best.pt outputs/stage1b_disease/best.pt \
+                              --out outputs/stage1b/eval
 
 Writes metrics.json, predictions.csv, confusion matrices (seen test), the calibration curve and logits.npz
-(raw test logits + train labels, the input of ../calibrate.py for the logit-adjusted calibration).
+(raw test logits + train labels).
 """
 import argparse
 import json

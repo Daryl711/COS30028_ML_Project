@@ -33,7 +33,7 @@ def composition_scores(crop_logits: np.ndarray, disease_logits: np.ndarray,
 def class_balanced_accuracy(scores: np.ndarray, gt: np.ndarray, pair_ids) -> float:
     """Mean of per-composition top-1 over pair_ids (each composition counts equally, however many images).
 
-    Same definition as class_balanced_acc in stage3/s3_r5/metrics.py: generalized prediction over all
+    Same definition as class_balanced_acc in stage3/stage3b/metrics.py: generalized prediction over all
     candidate pairs, averaged over the pairs that have at least one test image.
     """
     pred = scores.argmax(1)

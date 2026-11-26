@@ -9,12 +9,12 @@
   disease logits = s * cos(Dropout(f_d), T_d)
   loss = crop CE + disease CE + λ_kg · L_kg           L_kg as in R4 (KgCoOp anchor to T⁰)
 
-Both halves are reused unchanged: the prompt learner is stage3/s3_r4's R4Net (context, name tokens,
-attribute dropout, T⁰, drift), the adapters are stage3/s3_r5's Adapter. At epoch 0 the token deltas are
+Both halves are reused unchanged: the prompt learner is stage3/stage3a's R4Net (context, name tokens,
+attribute dropout, T⁰, drift), the adapters are stage3/stage3b's Adapter. At epoch 0 the token deltas are
 zero and the adapters are the identity, so the model equals 2b's epoch 0 exactly.
 
 `frozen()` returns an ordinary R5Net whose T_c, T_d are this epoch's prompt output and whose adapters are
-copied over. That is what the checkpoint's "model" entry holds, so stage3/s3_r5/evaluate.py scores it
+copied over. That is what the checkpoint's "model" entry holds, so stage3/stage3b/evaluate.py scores it
 unchanged (no text encoder at prediction time).
 """
 from __future__ import annotations
@@ -23,8 +23,8 @@ import torch
 import torch.nn.functional as F
 from torch import nn
 
-from stage3.s3_r4.model import R4Net
-from stage3.s3_r5.model import Adapter, R5Net
+from stage3.stage3a.model import R4Net
+from stage3.stage3b.model import Adapter, R5Net
 
 
 class R4R5Net(nn.Module):

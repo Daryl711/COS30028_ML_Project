@@ -1,7 +1,7 @@
 """
 export_s3_all_onnx.py - Exports the custom approach, Stage 3 run s3_all, to ONNX for the web page.
 
-s3_all = R4 + R5 + R6 (stage3/s3_all). At inference it is an R5 network on frozen BioCLIP:
+s3_all = R4 + R5 + R6 (stage3/stage3e). At inference it is an R5 network on frozen BioCLIP:
 
   v   = BioCLIP ViT-B/16 image feature (512)
   f_c = N(v + A_c(v)),  f_d = N(v + A_d(v))                      adapters
@@ -21,7 +21,7 @@ gitignored and hosted on Hugging Face only. int8 dynamic quantisation was tried 
 lost 1.9 points of calibrated HM (57.5% vs 59.4%), per-channel broke the model.
 
 --check compares the ONNX file with PyTorch on a few images, then scores it on the full test sets with
-the page's protocol next to outputs/s3_all/eval/metrics.json.
+the page's protocol next to outputs/stage3e/eval/metrics.json.
 
 Usage (from the repo root; needs torch, open_clip_torch, onnx, onnxruntime, pandas, pillow):
     python UserInterface/tools/export_s3_all_onnx.py            # writes web/model/s3_all.onnx
@@ -39,12 +39,12 @@ from torch import nn
 
 REPO = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO))
-from stage3.s3_r5.dataset import CLIP_MEAN, CLIP_STD  # noqa: E402
-from stage3.s3_r5.evaluate import load_r5  # noqa: E402  (training code, so the network matches exactly)
-from stage3.s3_r5.model import load_bioclip  # noqa: E402
+from stage3.stage3b.dataset import CLIP_MEAN, CLIP_STD  # noqa: E402
+from stage3.stage3b.evaluate import load_r5  # noqa: E402  (training code, so the network matches exactly)
+from stage3.stage3b.model import load_bioclip  # noqa: E402
 
-CHECKPOINT = REPO / "outputs" / "s3_all" / "best.pt"
-METRICS = REPO / "outputs" / "s3_all" / "eval" / "metrics.json"
+CHECKPOINT = REPO / "outputs" / "stage3e" / "best.pt"
+METRICS = REPO / "outputs" / "stage3e" / "eval" / "metrics.json"
 OUT_DIR = REPO / "UserInterface" / "web" / "model"
 OUT = OUT_DIR / "s3_all.onnx"
 SIZE = 224
@@ -83,7 +83,7 @@ def export(wrapper):
 
 
 def preprocess(path):
-    """The evaluation transform (stage3/s3_r5/dataset.py build_transforms, train=False)."""
+    """The evaluation transform (stage3/stage3b/dataset.py build_transforms, train=False)."""
     from PIL import Image
     from torchvision import transforms as T
     tf = T.Compose([T.Resize(int(SIZE / 0.875)), T.CenterCrop(SIZE), T.ToTensor(), T.Normalize(CLIP_MEAN, CLIP_STD)])
@@ -115,7 +115,7 @@ def check(wrapper, n_agree=40):
 
 def test_accuracy(onnx_path):
     """Full test sets, scored as the page does (log p(crop) + log p(disease) over the 333 pairs,
-    + the calibrated bias on unseen pairs), next to outputs/s3_all/eval/metrics.json."""
+    + the calibrated bias on unseen pairs), next to outputs/stage3e/eval/metrics.json."""
     import numpy as np
     import onnxruntime as ort
     import pandas as pd

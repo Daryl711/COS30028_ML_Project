@@ -14,7 +14,7 @@ The page identifies the **crop** and the **disease** in a leaf photo and ranks a
 
 | Picker label | Model | ONNX file | Size |
 |---|---|---|---|
-| Custom approach · S3 All (loaded by default) | frozen BioCLIP ViT-B/16 + learnt prompts, crop / disease adapters, crop-invariance GRL (`outputs/s3_all/best.pt`) | `model/s3_all.onnx` | 331 MB |
+| Custom approach · S3 All (loaded by default) | frozen BioCLIP ViT-B/16 + learnt prompts, crop / disease adapters, crop-invariance GRL (`outputs/stage3e/best.pt`) | `model/s3_all.onnx` | 331 MB |
 | Baseline 1 · Independent CNNs (EfficientNet-B0) | separate crop network + disease network | `model/effb0_independent.onnx` | 32 MB |
 | Baseline 2 · Multi-task CNN (EfficientNet-B0) | one backbone, crop head + disease head | `model/effb0_multitask.onnx` | 17 MB |
 
@@ -198,12 +198,12 @@ Script: `UserInterface/tools/export_effb0_onnx.py`
 
 ### 5.1 Source checkpoints
 
-The architecture comes from the training code itself (`baseline/MultiTaskBaseline/EffB0/model.py`: `timm` EfficientNet-B0 backbone + `Dropout → Linear` heads), so the exported graph is the trained model.
+The architecture comes from the training code itself (`stage1/stage1a/model.py`: `timm` EfficientNet-B0 backbone + `Dropout → Linear` heads), so the exported graph is the trained model.
 
 | Output file | Checkpoints | Training run |
 |---|---|---|
-| `effb0_multitask.onnx` | `outputs/s1_mt_effb0/best.pt` | Stage 1 re-run, multi-task |
-| `effb0_independent.onnx` | `outputs/s1_crop_effb0/best.pt` + `outputs/s1_disease_effb0/best.pt` | Stage 1 re-run, independent |
+| `effb0_multitask.onnx` | `outputs/stage1a/best.pt` | Stage 1 re-run, multi-task |
+| `effb0_independent.onnx` | `outputs/stage1b_crop/best.pt` + `outputs/stage1b_disease/best.pt` | Stage 1 re-run, independent |
 
 Training recipe for both: AdamW (backbone LR 2e-4, head LR 1e-3, weight decay 0.05), 2 warm-up epochs, label smoothing 0.1, dropout 0.3, drop-path 0.2, gradient clipping 1.0, mixed precision, up to 30 epochs with early stopping (patience 8), seed 42.
 
@@ -253,7 +253,7 @@ Each model is one entry in `web/model/config.json`:
 | Field | Value for the baselines | Purpose |
 |---|---|---|
 | `id`, `name`, `short_name`, `role` | e.g. `effb0_multitask`, `Baseline 2` | picker label, comparison headings |
-| `benchmark_id` | `s1_mt_effb0` / `s1_indep_effb0` | marks the row as *deployed* in the benchmarks dialog |
+| `benchmark_id` | `stage1a` / `stage1b` | marks the row as *deployed* in the benchmarks dialog |
 | `file` | `model/effb0_multitask.onnx` | ONNX file |
 | `input_size`, `resize`, `crop_pct` | `224`, `center_crop`, `0.875` | preprocessing (§4.1) |
 | `mean`, `std` | ImageNet | normalisation |

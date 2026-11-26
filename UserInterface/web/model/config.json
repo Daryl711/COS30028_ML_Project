@@ -5,7 +5,7 @@
       "name": "BioCLIP + learnt prompts, adapters and crop-invariance (S3 All)",
       "short_name": "Custom S3 All",
       "role": "Custom approach",
-      "benchmark_id": "s3_all",
+      "benchmark_id": "stage3e",
       "file": "model/s3_all.onnx",
       "gallery_embeddings": "model/s3_all_gallery.f16",
       "gallery_dtype": "float16",
@@ -47,7 +47,7 @@
         "embedding": "embedding"
       },
       "about": [
-        "A frozen BioCLIP ViT-B/16 image encoder with three trainable additions (Stage 3 run All, outputs/s3_all). R4: the crop and disease class vectors come from learnable prompts (4 context tokens, CSP attribute dropout 0.3) through the frozen BioCLIP text encoder, held near the hand-written taxonomy prompts by a KgCoOp anchor (λ_kg = 8). R5: separate crop and disease adapters (512 → 256 → 512 residual MLPs) on the image feature. R6: a crop discriminator behind a gradient reversal layer (conditional on the crops that carry each disease, λ_max 0.1 with a DANN ramp) pushes crop information out of the disease feature.",
+        "A frozen BioCLIP ViT-B/16 image encoder with three trainable additions (Stage 3 run All, outputs/stage3e). R4: the crop and disease class vectors come from learnable prompts (4 context tokens, CSP attribute dropout 0.3) through the frozen BioCLIP text encoder, held near the hand-written taxonomy prompts by a KgCoOp anchor (λ_kg = 8). R5: separate crop and disease adapters (512 → 256 → 512 residual MLPs) on the image feature. R6: a crop discriminator behind a gradient reversal layer (conditional on the crops that carry each disease, λ_max 0.1 with a DANN ramp) pushes crop information out of the disease feature.",
         "Classification is cosine similarity between each adapted image feature and the class vectors, scaled by BioCLIP's logit scale (100). The text encoder and discriminator are only needed in training, so the page runs the image encoder and adapters only.",
         "Training: 30 epochs (best epoch 25), batch 64, AdamW (LR 1e-3 for every new module, weight decay 0.05), 2 warm-up epochs, label smoothing 0.1, gradient clipping 1.0, mixed precision, seed 42. Input 224 × 224 (resize 256, centre crop), CLIP normalisation.",
         "A combination is scored log p(crop) + log p(disease) over the 333 valid pairs. Unseen combinations get a calibration bias of +7.12 on their score, the bias that maximises the harmonic mean of seen and unseen accuracy (the standard compositional zero-shot protocol), so the accuracies above are at that bias.",
@@ -59,7 +59,7 @@
       "name": "Independent CNNs (EfficientNet-B0)",
       "short_name": "Independent EffB0",
       "role": "Baseline 1",
-      "benchmark_id": "s1_indep_effb0",
+      "benchmark_id": "stage1b",
       "file": "model/effb0_independent.onnx",
       "gallery_embeddings": "model/effb0_independent_gallery.f16",
       "unseen_bias": 6.5973,
@@ -102,7 +102,7 @@
       "gallery_dtype": "float16",
       "about": [
         "Two separate EfficientNet-B0 networks (ImageNet-pretrained, fine-tuned end to end): one classifies the crop (55 classes), the other the disease (175 classes). Neither sees the other's labels.",
-        "Training (Stage 1 re-run, outputs/s1_crop_effb0 and s1_disease_effb0): 30 epochs max with early stopping (patience 8), AdamW (backbone LR 2e-4, head LR 1e-3, weight decay 0.05), 2 warm-up epochs, label smoothing 0.1, dropout 0.3, drop-path 0.2, gradient clipping 1.0, mixed precision, seed 42. Input 224 × 224 (resize 256, centre crop).",
+        "Training (Stage 1 re-run, outputs/stage1b_crop and stage1b_disease): 30 epochs max with early stopping (patience 8), AdamW (backbone LR 2e-4, head LR 1e-3, weight decay 0.05), 2 warm-up epochs, label smoothing 0.1, dropout 0.3, drop-path 0.2, gradient clipping 1.0, mixed precision, seed 42. Input 224 × 224 (resize 256, centre crop).",
         "A combination is scored log p(crop) + log p(disease) over the 333 valid pairs.",
         "Unseen combinations get a calibration bias of +6.60 on their score. It is the bias that maximises the harmonic mean of seen and unseen accuracy, found by a sweep on the test sets (the standard compositional zero-shot protocol), so the accuracies above are at that bias. Without it, unseen combinations almost never rank first.",
         "The gallery is ranked by cosine similarity of both networks' pooled features."
@@ -113,7 +113,7 @@
       "name": "Multi-task CNN (EfficientNet-B0)",
       "short_name": "Multi-task EffB0",
       "role": "Baseline 2",
-      "benchmark_id": "s1_mt_effb0",
+      "benchmark_id": "stage1a",
       "file": "model/effb0_multitask.onnx",
       "gallery_embeddings": "model/effb0_multitask_gallery.f16",
       "unseen_bias": 6.5757,
@@ -156,7 +156,7 @@
       "gallery_dtype": "float16",
       "about": [
         "One EfficientNet-B0 backbone (ImageNet-pretrained, fine-tuned end to end) shared by two linear heads: crop (55 classes) and disease (175 classes), trained jointly with the sum of the two cross-entropy losses.",
-        "Training (Stage 1 re-run, outputs/s1_mt_effb0): 30 epochs max with early stopping (patience 8), AdamW (backbone LR 2e-4, head LR 1e-3, weight decay 0.05), 2 warm-up epochs, label smoothing 0.1, dropout 0.3, drop-path 0.2, gradient clipping 1.0, mixed precision, seed 42. Input 224 × 224 (resize 256, centre crop).",
+        "Training (Stage 1 re-run, outputs/stage1a): 30 epochs max with early stopping (patience 8), AdamW (backbone LR 2e-4, head LR 1e-3, weight decay 0.05), 2 warm-up epochs, label smoothing 0.1, dropout 0.3, drop-path 0.2, gradient clipping 1.0, mixed precision, seed 42. Input 224 × 224 (resize 256, centre crop).",
         "A combination is scored log p(crop) + log p(disease) over the 333 valid pairs.",
         "Unseen combinations get a calibration bias of +6.58 on their score. It is the bias that maximises the harmonic mean of seen and unseen accuracy, found by a sweep on the test sets (the standard compositional zero-shot protocol), so the accuracies above are at that bias. Without it, unseen combinations almost never rank first.",
         "The gallery is ranked by cosine similarity of the pooled backbone feature."

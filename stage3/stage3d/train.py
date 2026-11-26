@@ -1,14 +1,14 @@
 """Train Stage 3 run R4 + R5 (learnable prompts + separate adapters). Repo root:
 
-  python -m stage3.s3_r4r5.train                                       # -> outputs/s3_r4r5/
-  python -m stage3.s3_r4r5.train --epochs 1 --experiment s3_r4r5_smoke  # quick check
-  python -m stage3.s3_r4r5.train --lr_prompt 1e-4 --experiment s3_r4r5_lrp1e-4   # token-LR sub-row
+  python -m stage3.stage3d.train                                       # -> outputs/stage3d/
+  python -m stage3.stage3d.train --epochs 1 --experiment stage3d_smoke  # quick check
+  python -m stage3.stage3d.train --lr_prompt 1e-4 --experiment stage3d_lrp1e-4   # token-LR sub-row
 
-This loop also trains All (R4 + R5 + R6): stage3/s3_all/train.py calls `main()` with its own config, and
+This loop also trains All (R4 + R5 + R6): stage3/stage3e/train.py calls `main()` with its own config, and
 an `r6:` section in the config switches on the discriminator and L_inv.
 
 training_scheme.md §1-§5 throughout; same data, split, augmentation, schedule, model selection and evaluator
-as R4 / R5 (helpers reused from stage3/s3_r5/train.py). Per step:
+as R4 / R5 (helpers reused from stage3/stage3b/train.py). Per step:
   T = prompts through the frozen text encoder (R4), f_c, f_d = adapters (R5)
   loss = crop CE + disease CE + lambda_kg * L_kg  [+ L_inv through a GRL with the DANN ramp, if R6]
 """
@@ -23,10 +23,10 @@ import yaml
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 
-from stage3.s3_r5.dataset import PlantDiseaseDataset, build_transforms
-from stage3.s3_r5.model import encode_images, encode_text, load_bioclip
-from stage3.s3_r5.train import cosine_with_warmup, get_device, load_data, seed_everything, val_stats
-from stage3.s3_r5r6.model import crop_mask_from_train, dann_lambda
+from stage3.stage3b.dataset import PlantDiseaseDataset, build_transforms
+from stage3.stage3b.model import encode_images, encode_text, load_bioclip
+from stage3.stage3b.train import cosine_with_warmup, get_device, load_data, seed_everything, val_stats
+from stage3.stage3c.model import crop_mask_from_train, dann_lambda
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 
@@ -49,7 +49,7 @@ def build_net(cfg, clip, tokenizer, data, device):
               bottleneck_dim=m["bottleneck_dim"], adapter_dropout=m["adapter_dropout"])
     scale = clip.logit_scale.exp().item()
     if cfg.get("r6"):
-        from stage3.s3_all.model import AllNet
+        from stage3.stage3e.model import AllNet
         mask = crop_mask_from_train(data["train"], len(data["diseases"]), len(data["crops"]))
         return AllNet(clip, tokenizer, data["prompts"], data["crops"], data["diseases"], scale, device, mask,
                       disc_hidden=m["disc_hidden"], conditional=bool(cfg["r6"]["conditional"]), **kw)
@@ -63,7 +63,7 @@ def main(argv=None, default_config=os.path.join(HERE, "config.yaml")):
         cfg = yaml.safe_load(f)
     r6 = cfg.get("r6")
     if (args.lambda_max is not None or args.unconditional) and not r6:
-        raise SystemExit("--lambda_max / --unconditional need a config with an r6 section (stage3.s3_all)")
+        raise SystemExit("--lambda_max / --unconditional need a config with an r6 section (stage3.stage3e)")
     if args.experiment:
         cfg["experiment"] = args.experiment
     if args.epochs:
@@ -220,7 +220,7 @@ def main(argv=None, default_config=os.path.join(HERE, "config.yaml")):
             print(f"[train] early stop: no val improvement for {tc['patience']} epochs")
             break
 
-    pkg = "s3_all" if r6 else "s3_r4r5"
+    pkg = "stage3e" if r6 else "stage3d"
     print(f"[train] best val score {best_score:.4f} at epoch {best_epoch} -> {out_dir}/best.pt")
     print(f"[next] python -m stage3.{pkg}.evaluate --checkpoint {out_dir}/best.pt")
 

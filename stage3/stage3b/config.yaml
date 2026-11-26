@@ -1,7 +1,7 @@
 # Stage 3, run R5: 2b (frozen BioCLIP + taxonomy-text cosine heads) + separate adapters A_c, A_d.
 # Every value below is training_scheme.md §1-§5. The "R5" lines are the only method-specific
 # settings (training_scheme.md §6.1). R8a logit adjustment is off (Stage 2 decision, results.md).
-experiment: s3_r5
+experiment: stage3b
 seed: 42
 output_dir: outputs
 

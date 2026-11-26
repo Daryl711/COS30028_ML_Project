@@ -1,6 +1,6 @@
 # Stage 3, run R5 + R6: conditional crop-invariance on the disease feature
 
-R5 (`stage3/s3_r5/`) plus a crop discriminator on the disease feature f_d behind a gradient-reversal
+R5 (`stage3/stage3b/`) plus a crop discriminator on the disease feature f_d behind a gradient-reversal
 layer (GRL). Nothing else changes: same data, split, schedule, model selection and evaluation as R5.
 The classification path is R5's, so prediction and every test metric are computed exactly as for R5.
 
@@ -23,32 +23,32 @@ left alone, because there the disease determines the crop.
 ## Run (from the repo root)
 
 ```bash
-python -m stage3.s3_r5r6.train                                   # -> outputs/s3_r5r6/
-python -m stage3.s3_r5r6.evaluate --checkpoint outputs/s3_r5r6/best.pt
+python -m stage3.stage3c.train                                   # -> outputs/stage3c/
+python -m stage3.stage3c.evaluate --checkpoint outputs/stage3c/best.pt
 
 # optional rows (PROPOSED_METHOD.md §5, §7)
-python -m stage3.s3_r5r6.train --lambda_max 0.3 --experiment s3_r5r6_lam0.3   # lambda sweep {0, 0.03, 0.1, 0.3}
-python -m stage3.s3_r5r6.train --unconditional --experiment s3_r5r6_uncond    # plain DANN ablation
+python -m stage3.stage3c.train --lambda_max 0.3 --experiment stage3c_lam0.3   # lambda sweep {0, 0.03, 0.1, 0.3}
+python -m stage3.stage3c.train --unconditional --experiment stage3c_uncond    # plain DANN ablation
 ```
 
 ### Sweep + ablation in one go (`sweep.py`)
 
 `sweep.py` trains each optional row with the unchanged `train.py`, then scores it with `evaluate.py`.
 Each run is its own process. At the end it writes a table comparing every run with R5 and the main
-λ 0.1 run to `outputs/s3_r5r6_sweep_summary.md`.
+λ 0.1 run to `outputs/stage3c_sweep_summary.md`.
 
 ```bash
-python -m stage3.s3_r5r6.sweep                       # lam0, lam0.03, lam0.3, uncond (~45 min each)
-python -m stage3.s3_r5r6.sweep --runs uncond         # any subset: lam0 lam0.03 lam0.3 uncond
-python -m stage3.s3_r5r6.sweep --summary_only        # just rebuild the table
+python -m stage3.stage3c.sweep                       # lam0, lam0.03, lam0.3, uncond (~45 min each)
+python -m stage3.stage3c.sweep --runs uncond         # any subset: lam0 lam0.03 lam0.3 uncond
+python -m stage3.stage3c.sweep --summary_only        # just rebuild the table
 ```
 
 | Key | Experiment dir | Setting |
 |---|---|---|
-| `lam0` | `outputs/s3_r5r6_lam0/` | conditional, λ_max 0 (sanity: should match R5) |
-| `lam0.03` | `outputs/s3_r5r6_lam0.03/` | conditional, λ_max 0.03 |
-| `lam0.3` | `outputs/s3_r5r6_lam0.3/` | conditional, λ_max 0.3 |
-| `uncond` | `outputs/s3_r5r6_uncond/` | unconditional DANN, λ_max 0.1 |
+| `lam0` | `outputs/stage3c_lam0/` | conditional, λ_max 0 (sanity: should match R5) |
+| `lam0.03` | `outputs/stage3c_lam0.03/` | conditional, λ_max 0.03 |
+| `lam0.3` | `outputs/stage3c_lam0.3/` | conditional, λ_max 0.3 |
+| `uncond` | `outputs/stage3c_uncond/` | unconditional DANN, λ_max 0.1 |
 
 Runs that already have `eval/metrics.json` are skipped, so an interrupted sweep resumes where it left off.
 Pass `--force` to retrain them.
@@ -67,4 +67,4 @@ should reproduce R5.
 
 As R5. `eval/metrics.json["leakage"]` holds the probe on f_d as `r5r6_f_d` (majority-crop baseline,
 train-split mapping, scored on val) and the base N(v) as `base_N_v`. Compare `r5r6_f_d.leak` with
-`outputs/s3_r5/eval/metrics.json["leakage"]["r5_f_d"]["leak"]`.
+`outputs/stage3b/eval/metrics.json["leakage"]["r5_f_d"]["leak"]`.

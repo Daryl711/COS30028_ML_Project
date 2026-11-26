@@ -1,7 +1,7 @@
 # Stage 3, run R4: 2b (frozen BioCLIP + taxonomy-text cosine heads) with learnable prompts.
-# Every value below is training_scheme.md §1-§5, identical to stage3/s3_r5/config.yaml. The "R4" lines are
+# Every value below is training_scheme.md §1-§5, identical to stage3/stage3b/config.yaml. The "R4" lines are
 # the only method-specific settings (guide.md Stage 3). R8a logit adjustment is off (Stage 2 decision).
-experiment: s3_r4
+experiment: stage3a
 seed: 42
 output_dir: outputs
 

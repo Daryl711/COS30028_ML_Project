@@ -1,19 +1,19 @@
 """R5 + R6 lambda sweep and unconditional-DANN ablation (PROPOSED_METHOD.md §5, §7). Run from the repo root:
 
-  python -m stage3.s3_r5r6.sweep                        # all four runs, then evaluate each, then a summary
-  python -m stage3.s3_r5r6.sweep --runs uncond          # just one run
-  python -m stage3.s3_r5r6.sweep --runs lam0 lam0.3     # any subset
-  python -m stage3.s3_r5r6.sweep --summary_only         # rebuild the summary from existing metrics.json files
+  python -m stage3.stage3c.sweep                        # all four runs, then evaluate each, then a summary
+  python -m stage3.stage3c.sweep --runs uncond          # just one run
+  python -m stage3.stage3c.sweep --runs lam0 lam0.3     # any subset
+  python -m stage3.stage3c.sweep --summary_only         # rebuild the summary from existing metrics.json files
 
-Each run is the unchanged stage3/s3_r5r6/train.py (same data, split, schedule, selection) with one override,
-launched as its own process, then scored with the unchanged stage3/s3_r5r6/evaluate.py:
+Each run is the unchanged stage3/stage3c/train.py (same data, split, schedule, selection) with one override,
+launched as its own process, then scored with the unchanged stage3/stage3c/evaluate.py:
 
   lam0     conditional,   lambda_max 0      sanity row: D trains, no gradient reaches A_d -> should match R5
   lam0.03  conditional,   lambda_max 0.03
   lam0.3   conditional,   lambda_max 0.3
   uncond   UNCONDITIONAL, lambda_max 0.1    plain DANN: all images, softmax over all 55 crops
 
-The main conditional lambda_max 0.1 run is the original `python -m stage3.s3_r5r6.train` (outputs/s3_r5r6/);
+The main conditional lambda_max 0.1 run is the original `python -m stage3.stage3c.train` (outputs/stage3c/);
 it is not retrained here but is included in the summary if its metrics.json exists.
 A run whose eval/metrics.json already exists is skipped unless --force is given.
 """
@@ -28,19 +28,19 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(os.path.dirname(HERE))
 
 RUNS = {
-    "lam0":    {"experiment": "s3_r5r6_lam0",    "args": ["--lambda_max", "0"]},
-    "lam0.03": {"experiment": "s3_r5r6_lam0.03", "args": ["--lambda_max", "0.03"]},
-    "lam0.3":  {"experiment": "s3_r5r6_lam0.3",  "args": ["--lambda_max", "0.3"]},
-    "uncond":  {"experiment": "s3_r5r6_uncond",  "args": ["--lambda_max", "0.1", "--unconditional"]},
+    "lam0":    {"experiment": "stage3c_lam0",    "args": ["--lambda_max", "0"]},
+    "lam0.03": {"experiment": "stage3c_lam0.03", "args": ["--lambda_max", "0.03"]},
+    "lam0.3":  {"experiment": "stage3c_lam0.3",  "args": ["--lambda_max", "0.3"]},
+    "uncond":  {"experiment": "stage3c_uncond",  "args": ["--lambda_max", "0.1", "--unconditional"]},
 }
 # Rows shown in the summary, in order (existing reference runs + the sweep).
 SUMMARY_ROWS = [
-    ("R5 (no R6)", "s3_r5"),
-    ("R6 cond, lam 0", "s3_r5r6_lam0"),
-    ("R6 cond, lam 0.03", "s3_r5r6_lam0.03"),
-    ("R6 cond, lam 0.1 (main)", "s3_r5r6"),
-    ("R6 cond, lam 0.3", "s3_r5r6_lam0.3"),
-    ("R6 uncond DANN, lam 0.1", "s3_r5r6_uncond"),
+    ("R5 (no R6)", "stage3b"),
+    ("R6 cond, lam 0", "stage3c_lam0"),
+    ("R6 cond, lam 0.03", "stage3c_lam0.03"),
+    ("R6 cond, lam 0.1 (main)", "stage3c"),
+    ("R6 cond, lam 0.3", "stage3c_lam0.3"),
+    ("R6 uncond DANN, lam 0.1", "stage3c_uncond"),
 ]
 
 
@@ -94,16 +94,16 @@ def main():
             if os.path.exists(metrics_path(args.output_dir, exp)) and not args.force:
                 print(f"[sweep] {key}: {exp} already evaluated, skipping (use --force to rerun)")
                 continue
-            train_cmd = ["-m", "stage3.s3_r5r6.train", "--experiment", exp, *r["args"]]
+            train_cmd = ["-m", "stage3.stage3c.train", "--experiment", exp, *r["args"]]
             if args.epochs:
                 train_cmd += ["--epochs", str(args.epochs)]
             run_step(train_cmd)
-            run_step(["-m", "stage3.s3_r5r6.evaluate",
+            run_step(["-m", "stage3.stage3c.evaluate",
                       "--checkpoint", os.path.join(args.output_dir, exp, "best.pt")])
 
     table = summarize(args.output_dir)
     print("\n" + table)
-    out = os.path.join(REPO, args.output_dir, "s3_r5r6_sweep_summary.md")
+    out = os.path.join(REPO, args.output_dir, "stage3c_sweep_summary.md")
     with open(out, "w", encoding="utf-8") as f:
         f.write("# R5 + R6 lambda sweep / unconditional DANN (seed 42)\n\n"
                 "Test metrics use the generalized valid-pair protocol (333 pairs). "

@@ -1,11 +1,11 @@
 """Train Stage 3 run R4 (2b + learnable prompts: CoOp context, CSP class tokens, KgCoOp anchor). Repo root:
 
-  python -m stage3.s3_r4.train                                        # lambda_kg 8 -> outputs/s3_r4/
-  python -m stage3.s3_r4.train --lambda_kg 0 --experiment s3_r4_nokg  # sub-row without L_kg
-  python -m stage3.s3_r4.train --epochs 1 --experiment s3_r4_smoke    # quick check
+  python -m stage3.stage3a.train                                        # lambda_kg 8 -> outputs/stage3a/
+  python -m stage3.stage3a.train --lambda_kg 0 --experiment stage3a_nokg  # sub-row without L_kg
+  python -m stage3.stage3a.train --epochs 1 --experiment stage3a_smoke    # quick check
 
 training_scheme.md §1-§5 throughout, with the same data, split, augmentation, schedule, model selection
-and evaluation as R5 (stage3/s3_r5/train.py, whose helpers this reuses). The only change from 2b is
+and evaluation as R5 (stage3/stage3b/train.py, whose helpers this reuses). The only change from 2b is
 where T_c, T_d come from: the frozen text encoder runs every step on the learnable prompts, and
 L += lambda_kg * L_kg.
 """
@@ -20,9 +20,9 @@ import yaml
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 
-from stage3.s3_r5.dataset import PlantDiseaseDataset, build_transforms
-from stage3.s3_r5.model import encode_images, encode_text, load_bioclip
-from stage3.s3_r5.train import cosine_with_warmup, get_device, load_data, seed_everything, val_stats
+from stage3.stage3b.dataset import PlantDiseaseDataset, build_transforms
+from stage3.stage3b.model import encode_images, encode_text, load_bioclip
+from stage3.stage3b.train import cosine_with_warmup, get_device, load_data, seed_everything, val_stats
 
 from .model import R4Net
 
@@ -169,7 +169,7 @@ def main():
             break
 
     print(f"[train] best val score {best_score:.4f} at epoch {best_epoch} -> {out_dir}/best.pt")
-    print(f"[next] python -m stage3.s3_r4.evaluate --checkpoint {out_dir}/best.pt")
+    print(f"[next] python -m stage3.stage3a.evaluate --checkpoint {out_dir}/best.pt")
 
 
 if __name__ == "__main__":

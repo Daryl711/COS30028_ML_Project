@@ -1,11 +1,11 @@
 """Train Stage 3 run R5 + R6. Run from the repo root:
 
-  python -m stage3.s3_r5r6.train
-  python -m stage3.s3_r5r6.train --epochs 1 --experiment s3_r5r6_smoke          # quick check
-  python -m stage3.s3_r5r6.train --lambda_max 0.3 --experiment s3_r5r6_lam0.3   # sweep run
-  python -m stage3.s3_r5r6.train --unconditional --experiment s3_r5r6_uncond    # ablation sub-row
+  python -m stage3.stage3c.train
+  python -m stage3.stage3c.train --epochs 1 --experiment stage3c_smoke          # quick check
+  python -m stage3.stage3c.train --lambda_max 0.3 --experiment stage3c_lam0.3   # sweep run
+  python -m stage3.stage3c.train --unconditional --experiment stage3c_uncond    # ablation sub-row
 
-Identical to stage3/s3_r5/train.py (same data, split, schedule, selection, early stopping) except:
+Identical to stage3/stage3b/train.py (same data, split, schedule, selection, early stopping) except:
   loss = crop CE + disease CE + L_inv, where L_inv reaches A_d through a GRL whose strength follows the
   DANN ramp over training progress p = step / total_steps.
 Model selection is unchanged: best val_score (mean of val crop and disease top-1).
@@ -21,9 +21,9 @@ import yaml
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 
-from stage3.s3_r5.dataset import PlantDiseaseDataset, build_transforms
-from stage3.s3_r5.model import encode_images, encode_text, load_bioclip
-from stage3.s3_r5.train import cosine_with_warmup, get_device, load_data, seed_everything, val_stats
+from stage3.stage3b.dataset import PlantDiseaseDataset, build_transforms
+from stage3.stage3b.model import encode_images, encode_text, load_bioclip
+from stage3.stage3b.train import cosine_with_warmup, get_device, load_data, seed_everything, val_stats
 
 from .model import R5R6Net, crop_mask_from_train, dann_lambda
 
@@ -169,7 +169,7 @@ def main():
             break
 
     print(f"[train] best val score {best_score:.4f} at epoch {best_epoch} -> {out_dir}/best.pt")
-    print(f"[next] python -m stage3.s3_r5r6.evaluate --checkpoint {out_dir}/best.pt")
+    print(f"[next] python -m stage3.stage3c.evaluate --checkpoint {out_dir}/best.pt")
 
 
 if __name__ == "__main__":

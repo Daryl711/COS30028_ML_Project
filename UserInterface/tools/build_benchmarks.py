@@ -29,12 +29,12 @@ OUT_FILE = REPO / "UserInterface" / "web" / "data" / "benchmarks.json"
 # Edit this list to change which runs appear or how they are labelled.
 RUNS = [
     # The two deployed baselines (Stage 1 re-runs, the checkpoints exported to ONNX)
-    ("s1_indep_effb0", "Independent CNNs (EfficientNet-B0)", "Baseline 1", "B1 · Independent CNNs"),
-    ("s1_mt_effb0", "Multi-task CNN (EfficientNet-B0)", "Baseline 2", "B2 · Multi-task CNN"),
-    # The deployed custom approach (outputs/s3_all/best.pt), then its Stage 3 component runs
-    ("s3_all", "S3 All: BioCLIP + learnt prompts + adapters + crop-invariance", "Custom approach", "Custom · S3 All"),
-    ("s3_r5", "S3 R5: BioCLIP + crop / disease adapters", "Ablation", "Ablation · S3 R5"),
-    ("s3_r5r6", "S3 R5 + R6: adapters + crop discriminator", "Ablation", "Ablation · S3 R5 + R6"),
+    ("stage1b", "Independent CNNs (EfficientNet-B0)", "Baseline 1", "B1 · Independent CNNs"),
+    ("stage1a", "Multi-task CNN (EfficientNet-B0)", "Baseline 2", "B2 · Multi-task CNN"),
+    # The deployed custom approach (outputs/stage3e/best.pt), then its Stage 3 component runs
+    ("stage3e", "S3 All: BioCLIP + learnt prompts + adapters + crop-invariance", "Custom approach", "Custom · S3 All"),
+    ("stage3b", "S3 R5: BioCLIP + crop / disease adapters", "Ablation", "Ablation · S3 R5"),
+    ("stage3c", "S3 R5 + R6: adapters + crop discriminator", "Ablation", "Ablation · S3 R5 + R6"),
 ]
 TOP_CONFUSIONS = 10
 

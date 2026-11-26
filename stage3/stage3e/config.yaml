@@ -1,7 +1,7 @@
 # Stage 3, run All (R4 + R5 + R6): learnable prompts + separate adapters + conditional crop-invariance GRL.
 # Every value below is training_scheme.md §1-§5, identical to the other Stage 3 runs. The "R4" / "R5" / "R6"
 # lines are those runs' method settings, unchanged (training_scheme.md §6.1). R8a logit adjustment is off.
-experiment: s3_all
+experiment: stage3e
 seed: 42
 output_dir: outputs
 

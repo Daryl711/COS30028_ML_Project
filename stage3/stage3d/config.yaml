@@ -1,7 +1,7 @@
 # Stage 3, run R4 + R5: learnable prompts (R4) + separate adapters (R5) on the 2b base.
-# Every value below is training_scheme.md §1-§5, identical to stage3/s3_r4 and stage3/s3_r5. The "R4" / "R5"
+# Every value below is training_scheme.md §1-§5, identical to stage3/stage3a and stage3/stage3b. The "R4" / "R5"
 # lines are those runs' method settings, unchanged (training_scheme.md §6.1). R8a logit adjustment is off.
-experiment: s3_r4r5
+experiment: stage3d
 seed: 42
 output_dir: outputs
 

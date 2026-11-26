@@ -1,12 +1,12 @@
 """R4 lower token-LR sweep (guide.md "Rule", training_scheme.md §6.1, results.md next step 6). Repo root:
 
-  python -m stage3.s3_r4.sweep                          # all six runs, evaluate each, then a summary
-  python -m stage3.s3_r4.sweep --runs lr1e-4 lr1e-4_nokg
-  python -m stage3.s3_r4.sweep --epochs 1               # smoke test (experiments get an _ep1 suffix)
-  python -m stage3.s3_r4.sweep --summary_only           # rebuild the summary from existing metrics.json files
+  python -m stage3.stage3a.sweep                          # all six runs, evaluate each, then a summary
+  python -m stage3.stage3a.sweep --runs lr1e-4 lr1e-4_nokg
+  python -m stage3.stage3a.sweep --epochs 1               # smoke test (experiments get an _ep1 suffix)
+  python -m stage3.stage3a.sweep --summary_only           # rebuild the summary from existing metrics.json files
 
-Each run is the unchanged stage3/s3_r4/train.py with only the token LR (and, for the _nokg rows, lambda_kg 0)
-overridden, launched as its own process, then scored with the unchanged stage3/s3_r4/evaluate.py.
+Each run is the unchanged stage3/stage3a/train.py with only the token LR (and, for the _nokg rows, lambda_kg 0)
+overridden, launched as its own process, then scored with the unchanged stage3/stage3a/evaluate.py.
 The main row (lr 1e-3) is not changed: this is a named sweep sub-row and does not replace it.
 
 LRs, all below the 1e-3 default:
@@ -15,7 +15,7 @@ LRs, all below the 1e-3 default:
   5e-5   CSP's official code
 Each at lambda_kg 8 (main R4 setting) and 0 (tests whether the early drift jump at 1e-3 is what costs seen acc).
 
-The 1e-3 reference rows (outputs/s3_r4, outputs/s3_r4_nokg) are not retrained; they are included in the
+The 1e-3 reference rows (outputs/stage3a, outputs/stage3a_nokg) are not retrained; they are included in the
 summary if their metrics.json exists. A run whose eval/metrics.json already exists is skipped unless --force.
 """
 import argparse
@@ -32,13 +32,13 @@ REPO = os.path.dirname(os.path.dirname(HERE))
 LRS = ["5e-4", "1e-4", "5e-5"]
 RUNS = {}
 for lr in LRS:
-    RUNS[f"lr{lr}"] = {"experiment": f"s3_r4_lr{lr}", "args": ["--lr_new", lr]}
-    RUNS[f"lr{lr}_nokg"] = {"experiment": f"s3_r4_lr{lr}_nokg", "args": ["--lr_new", lr, "--lambda_kg", "0"]}
+    RUNS[f"lr{lr}"] = {"experiment": f"stage3a_lr{lr}", "args": ["--lr_new", lr]}
+    RUNS[f"lr{lr}_nokg"] = {"experiment": f"stage3a_lr{lr}_nokg", "args": ["--lr_new", lr, "--lambda_kg", "0"]}
 
-SUMMARY_ROWS = [("lr 1e-3, kg 8 (main)", "s3_r4")] + \
-               [(f"lr {lr}, kg 8", f"s3_r4_lr{lr}") for lr in LRS] + \
-               [("lr 1e-3, kg 0", "s3_r4_nokg")] + \
-               [(f"lr {lr}, kg 0", f"s3_r4_lr{lr}_nokg") for lr in LRS]
+SUMMARY_ROWS = [("lr 1e-3, kg 8 (main)", "stage3a")] + \
+               [(f"lr {lr}, kg 8", f"stage3a_lr{lr}") for lr in LRS] + \
+               [("lr 1e-3, kg 0", "stage3a_nokg")] + \
+               [(f"lr {lr}, kg 0", f"stage3a_lr{lr}_nokg") for lr in LRS]
 
 
 def run_step(cmd: list[str]) -> None:
@@ -100,16 +100,16 @@ def main():
             if os.path.exists(metrics_path(args.output_dir, exp)) and not args.force:
                 print(f"[sweep] {key}: {exp} already evaluated, skipping (use --force to rerun)")
                 continue
-            train_cmd = ["-m", "stage3.s3_r4.train", "--experiment", exp, *r["args"]]
+            train_cmd = ["-m", "stage3.stage3a.train", "--experiment", exp, *r["args"]]
             if args.epochs:
                 train_cmd += ["--epochs", str(args.epochs)]
             run_step(train_cmd)
-            run_step(["-m", "stage3.s3_r4.evaluate",
+            run_step(["-m", "stage3.stage3a.evaluate",
                       "--checkpoint", os.path.join(args.output_dir, exp, "best.pt")])
 
     table = summarize(args.output_dir)
     print("\n" + table)
-    out = os.path.join(REPO, args.output_dir, "s3_r4_lr_sweep_summary.md")
+    out = os.path.join(REPO, args.output_dir, "stage3a_lr_sweep_summary.md")
     with open(out, "w", encoding="utf-8") as f:
         f.write("# R4 token-LR sweep (seed 42)\n\n"
                 "Sweep sub-row (guide.md): the main R4 row stays at lr 1e-3. Test metrics use the generalized "

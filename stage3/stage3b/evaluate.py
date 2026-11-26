@@ -1,6 +1,6 @@
 """Evaluate an R5 checkpoint on test_seen / test_unseen, plus the crop-leakage probe. Repo root:
 
-  python -m stage3.s3_r5.evaluate --checkpoint outputs/s3_r5/best.pt
+  python -m stage3.stage3b.evaluate --checkpoint outputs/stage3b/best.pt
 
 Generalized valid-pair protocol (training_scheme.md §5), same code as the Stage 2 notebooks.
 Writes <checkpoint dir>/eval/metrics.json (or --out).

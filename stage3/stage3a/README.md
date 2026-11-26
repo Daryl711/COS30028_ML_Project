@@ -24,17 +24,17 @@ T⁰  = embedding of the unchanged taxonomy prompts = the 2b / R5 initial classi
 ## Run (from the repo root)
 
 ```bash
-python -m stage3.s3_r4.train                                         # λ_kg 8 -> outputs/s3_r4/
-python -m stage3.s3_r4.evaluate --checkpoint outputs/s3_r4/best.pt
+python -m stage3.stage3a.train                                         # λ_kg 8 -> outputs/stage3a/
+python -m stage3.stage3a.evaluate --checkpoint outputs/stage3a/best.pt
 
 # sub-row without L_kg (guide.md: shows the prompt overfitting that the anchor prevents)
-python -m stage3.s3_r4.train --lambda_kg 0 --experiment s3_r4_nokg
-python -m stage3.s3_r4.evaluate --checkpoint outputs/s3_r4_nokg/best.pt
+python -m stage3.stage3a.train --lambda_kg 0 --experiment stage3a_nokg
+python -m stage3.stage3a.evaluate --checkpoint outputs/stage3a_nokg/best.pt
 
 # lower token-LR sweep sub-row (guide.md): lr {5e-4, 1e-4, 5e-5} x λ_kg {8, 0}, train + evaluate + summary
-python -m stage3.s3_r4.sweep                          # -> outputs/s3_r4_lr*/, outputs/s3_r4_lr_sweep_summary.md
-python -m stage3.s3_r4.sweep --runs lr1e-4 lr1e-4_nokg
-python -m stage3.s3_r4.train --lr_new 1e-4 --experiment s3_r4_lr1e-4   # a single run by hand
+python -m stage3.stage3a.sweep                          # -> outputs/stage3a_lr*/, outputs/stage3a_lr_sweep_summary.md
+python -m stage3.stage3a.sweep --runs lr1e-4 lr1e-4_nokg
+python -m stage3.stage3a.train --lr_new 1e-4 --experiment stage3a_lr1e-4   # a single run by hand
 ```
 
 About 90 s per epoch on an RTX 4050 Laptop (6 GB): the text pass adds about 0.26 s per step, and the
@@ -43,7 +43,7 @@ text tower's activations peak at 3.3 GB.
 ## Design choices
 
 - **Taxonomy prompts kept.** The prompts are the 2b / R5 ones (`taxonomy_prompts()`); only "a photo of a"
-  and the class name become learnable. The Colab R4 (`CSP_KgCooP/`) used plain-name prompts and is not
+  and the class name become learnable. The Colab R4 (`CSP(another_scheme)/`) used plain-name prompts and is not
   comparable (see `results.md`).
 - **θ sits only in the label slot.** The class name also appears again inside the taxonomy string
   ("tomato are Solanum lycopersicum, ..."); that copy stays fixed text, as in PROPOSED_METHOD.md §3.3.

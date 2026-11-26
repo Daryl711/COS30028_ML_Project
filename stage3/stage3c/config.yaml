@@ -1,7 +1,7 @@
 # Stage 3, run R5 + R6: R5 (2b + separate adapters) + conditional crop-invariance GRL on f_d.
-# Every value below is training_scheme.md §1-§5, identical to stage3/s3_r5/config.yaml. The "R6" lines
+# Every value below is training_scheme.md §1-§5, identical to stage3/stage3b/config.yaml. The "R6" lines
 # are the only additions (training_scheme.md §6.1). R8a logit adjustment is off (Stage 2 decision).
-experiment: s3_r5r6
+experiment: stage3c
 seed: 42
 output_dir: outputs
 

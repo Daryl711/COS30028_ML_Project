@@ -1,9 +1,9 @@
 # EfficientNet-B0 baseline on DPD-Small, following the training scheme (Stage 1).
-# Same as the initial attempt (configs/baseline.yaml) except the lines marked "changed".
+# Scheme settings for both Stage 1 runs (training_scheme.md).
 # mode: multitask -> one backbone, crop head + disease head (Stage 1a)
 #       crop      -> crop-only model     } run both for the independent
 #       disease   -> disease-only model  } baseline (Stage 1b)
-experiment: s1_mt_effb0            # changed: scheme run name (was multitask_effb0)
+experiment: stage1a
 mode: multitask
 seed: 42
 output_dir: outputs
@@ -30,12 +30,12 @@ train:
   accum_steps: 1                   # batch 64 fits on 6 GB at 224 px, so no accumulation
   lr_backbone: 2.0e-4
   lr_head: 1.0e-3
-  weight_decay: 5.0e-2             # changed: scheme value (was 1.0e-2)
+  weight_decay: 5.0e-2
   warmup_epochs: 2
   label_smoothing: 0.1
   loss_weights:
     crop: 1.0
     disease: 1.0
   amp: true
-  grad_clip: 1.0                   # changed: clip global grad norm to 1.0 (was off)
+  grad_clip: 1.0                   # clip global grad norm to 1.0
   patience: 8                      # early stopping on val score; 0 disables

@@ -1,7 +1,7 @@
 """Train Stage 3 run R5 (2b + separate adapters A_c, A_d). Run from the repo root:
 
-  python -m stage3.s3_r5.train
-  python -m stage3.s3_r5.train --epochs 1 --experiment s3_r5_smoke     # quick check
+  python -m stage3.stage3b.train
+  python -m stage3.stage3b.train --epochs 1 --experiment stage3b_smoke     # quick check
 
 training_scheme.md §1-§5 throughout; the only change from 2b is the two adapters.
 BioCLIP is frozen, so val features are computed once (eval transform is deterministic) and reused.
@@ -196,7 +196,7 @@ def main():
             break
 
     print(f"[train] best val score {best_score:.4f} at epoch {best_epoch} -> {out_dir}/best.pt")
-    print(f"[next] python -m stage3.s3_r5.evaluate --checkpoint {out_dir}/best.pt")
+    print(f"[next] python -m stage3.stage3b.evaluate --checkpoint {out_dir}/best.pt")
 
 
 if __name__ == "__main__":

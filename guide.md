@@ -10,7 +10,7 @@ method-specific terms change between rows, so every row in `results.md` is a fai
 All new modules (heads, text classifiers, adapters, prompt tokens, discriminator) use LR 1e-3 in every run.
 This overrides the 5e-4 in `PROPOSED_METHOD.md` (`training_scheme.md` §6.2).
 
-- **Why:** 1e-3 is the head LR of the Stage 1 baseline, `baseline/MultiTaskBaseline/EffB0/config.yaml`
+- **Why:** 1e-3 is the head LR of the Stage 1 baseline, `stage1/stage1a/config.yaml`
   (`lr_head: 1.0e-3`, with `lr_backbone: 2.0e-4` for the fine-tuned EfficientNet). Every later stage
   builds on that baseline, so it keeps the same recipe. With the LR held fixed, a difference between
   rows comes from the module, not from per-run tuning, and no run gets an extra hyperparameter search
@@ -32,14 +32,14 @@ Run every command from the repo root.
 ```bash
 # GPU (CUDA 12.6)
 python -m pip install --force-reinstall --no-deps torch==2.7.0 torchvision==0.22.0 --index-url https://download.pytorch.org/whl/cu126
-pip install -r stage3/s3_r5/requirements.txt
+pip install -r stage3/stage3b/requirements.txt
 ```
 
 | Stage | Question it answers | Experiments | Output names |
 |---|---|---|---|
-| 1 | How well does a plain CNN do, and does sharing a backbone help? | EffB0 multi-task, EffB0 single-task | `s1_mt_effb0`, `s1_st_effb0_crop` + `s1_st_effb0_disease` |
-| 2 | Does frozen BioCLIP beat the CNN? Do text classifiers help? Which text? Does logit adjustment help? | 2a image only, 2b taxonomy, 2c taxonomy + LLM, 2d = 2b + R8a, 2e = 2c + R8a | `s2a_bioclip_img`, `s2b_bioclip_tax`, `s2c_bioclip_taxdesc`, `s2d_bioclip_tax_la`, `s2e_bioclip_taxdesc_la` |
-| 3 | Which DISCO modules help on the taxonomy-text base? | R4, R5, R5+R6, R4+R5, R4+R5+R6 | `s3_r4`, `s3_r5`, `s3_r5r6`, `s3_r4r5`, `s3_all` |
+| 1 | How well does a plain CNN do, and does sharing a backbone help? | EffB0 multi-task, EffB0 single-task | `stage1a`, `stage1b_crop` + `stage1b_disease` |
+| 2 | Does frozen BioCLIP beat the CNN? Do text classifiers help? Which text? Does logit adjustment help? | 2a image only, 2b taxonomy, 2c taxonomy + LLM, 2d = 2b + R8a, 2e = 2c + R8a | `stage2a`, `stage2b`, `stage2c`, `stage2d`, `stage2e` |
+| 3 | Which DISCO modules help on the taxonomy-text base? | 3a R4, 3b R5, 3c R5+R6, 3d R4+R5, 3e R4+R5+R6 (All) | `stage3a`, `stage3b`, `stage3c`, `stage3d`, `stage3e` |
 
 Method details and citations are in `PROPOSED_METHOD.md`: R3 §3.3, R4 §4.5, R5 §3.2, R6 §3.4 and §4.4,
 R8a §3.7 and §4.1.
@@ -61,20 +61,18 @@ image (224) → EfficientNet-B0 → 1280-d ─┬─ Dropout 0.3 → Linear → 
 | **1a Multi-task** | one backbone, two heads, loss = crop CE + disease CE |
 | **1b Single-task** | two independent backbones, one head each; their log-probs are added at evaluation |
 
-**Before running:** bring `configs/baseline.yaml` and the B0 `train.py` in line with the scheme
-(`training_scheme.md` §7): `weight_decay: 5.0e-2`, `grad_clip: 1.0`. Backbone LR stays 2e-4 and
-`drop_path_rate` 0.2 (backbone-specific). The existing `outputs/multitask_effb0` and
-`outputs/SingleTask_effb0` were trained with the old values and must be rerun.
+Config: `stage1/stage1a/config.yaml` (scheme values `weight_decay: 5.0e-2`, `grad_clip: 1.0`; backbone LR
+2e-4 and `drop_path_rate` 0.2 are backbone-specific). 1b runs the same code through `stage1/stage1b/`.
 
 ```bash
 # 1a multi-task
-python "baseline/MultiTaskBaseline/InitialAttempt(Effb0)/train.py" --config configs/baseline.yaml --experiment s1_mt_effb0
-python "baseline/MultiTaskBaseline/InitialAttempt(Effb0)/evaluate.py" --checkpoints outputs/s1_mt_effb0/best.pt --out outputs/s1_mt_effb0/eval
+python stage1/stage1a/train.py
+python stage1/stage1a/evaluate.py --checkpoints outputs/stage1a/best.pt --out outputs/stage1a/eval
 
 # 1b single-task (independent)
-python "baseline/MultiTaskBaseline/InitialAttempt(Effb0)/train.py" --config configs/baseline.yaml --mode crop    --experiment s1_st_effb0_crop
-python "baseline/MultiTaskBaseline/InitialAttempt(Effb0)/train.py" --config configs/baseline.yaml --mode disease --experiment s1_st_effb0_disease
-python "baseline/MultiTaskBaseline/InitialAttempt(Effb0)/evaluate.py" --checkpoints outputs/s1_st_effb0_crop/best.pt outputs/s1_st_effb0_disease/best.pt --out outputs/s1_st_effb0/eval
+python stage1/stage1b/train.py --mode crop       # -> outputs/stage1b_crop
+python stage1/stage1b/train.py --mode disease    # -> outputs/stage1b_disease
+python stage1/stage1b/evaluate.py                # -> outputs/stage1b/eval
 ```
 
 What to record: seen/unseen composition top-1/top-5, crop and disease accuracy per split, HM, AUSUC.
@@ -161,7 +159,7 @@ module(s) to that base and changes nothing else. Stage 3 is where adapters first
 | Run | Adds | What it changes | Expected effect |
 |---|---|---|---|
 | **R4** | CoOp context (M = 4) + CSP primitive tokens, KgCoOp anchor λ_kg = 8 | T_c, T_d come from learnable prompts (initialised from the taxonomy text) through the frozen text encoder; `L += λ_kg · (‖T_c − T_c⁰‖² + ‖T_d − T_d⁰‖²)` | better seen fit without unseen collapse |
-| **R5** | Separate adapters A_c, A_d | `f_c = N(v + A_c(v))` feeds the crop head, `f_d = N(v + A_d(v))` feeds the disease head (512 → 256 → 512, zero-init, as in `stage3/s3_r5/model.py`) | crop and disease get separate subspaces |
+| **R5** | Separate adapters A_c, A_d | `f_c = N(v + A_c(v))` feeds the crop head, `f_d = N(v + A_d(v))` feeds the disease head (512 → 256 → 512, zero-init, as in `stage3/stage3b/model.py`) | crop and disease get separate subspaces |
 | **R5 + R6** | R5 + conditional crop-invariance (GRL) | crop discriminator on f_d behind a gradient-reversal layer, softmax restricted to the crops that carry the image's disease, only for diseases on ≥ 2 crops; λ_max = 0.1 with the DANN ramp | crop leakage in f_d drops, unseen disease accuracy rises, seen drops slightly |
 | **R4 + R5** | R4 + R5 | prompts + separate adapters | tests whether the two add up |
 | **All (R4 + R5 + R6)** | all three | full Stage 3 model | best unseen / HM |

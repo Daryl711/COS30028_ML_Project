@@ -1,1 +1,1 @@
-# CSP_KgCooP
+# CSP(another_scheme)

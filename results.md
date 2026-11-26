@@ -2,23 +2,27 @@
 
 This file keeps only the runs that follow `guide.md`: the `training_scheme.md` recipe (same split, augmentation, AdamW wd 0.05, grad clip 1.0, 30 epochs, early stopping, seed 42) and an evaluator over the **333 valid pairs** (323 seen, 10 unseen). Every number below was read from that run's `outputs/<run>/eval/metrics.json`. `test_seen` has 2000 images and `test_unseen` has 1448. Compositions are scored as `log p(crop|x) + log p(disease|x)`.
 
+Run IDs match the folder names: code in `stage<N>/stage<N><x>/`, runs in `outputs/stage<N><x>[_<sub-row>]/`. Stage 1: 1a = multi-task, 1b = single-task. Stage 3: 3a = R4, 3b = R5, 3c = R5 + R6, 3d = R4 + R5, 3e = All.
+
 ## Which results are comparable
+
+The code and outputs of every "Removed" row below have been deleted from the repo.
 
 | Source | Status | Reason |
 |---|---|---|
-| `s1_mt_effb0`, `s1_indep_effb0` (Stage 1 re-runs) | **Kept** | Guide Stage 1 runs, trained with the scheme's wd 0.05 and grad clip 1.0. |
-| `s3_r4`, `s3_r4_nokg`, `s3_r5`, `s3_r5r6`, `s3_r4r5`, `s3_all` | **Kept** | The five guide Stage 3 runs, plus the R4 sub-row without λ_kg that the guide asks for. |
-| `s3_r4_lr*` (token-LR sweep), `s3_r5r6_lam*`, `s3_r5r6_uncond` | **Kept as sub-rows** | Named sweep sub-rows (guide: one setting changed, reported next to the main row, never replacing it). |
+| `stage1a`, `stage1b` (Stage 1 re-runs) | **Kept** | Guide Stage 1 runs, trained with the scheme's wd 0.05 and grad clip 1.0. |
+| `stage3a`, `stage3a_nokg`, `stage3b`, `stage3c`, `stage3d`, `stage3e` | **Kept** | The five guide Stage 3 runs, plus the R4 sub-row without λ_kg that the guide asks for. |
+| `stage3a_lr*` (token-LR sweep), `stage3c_lam*`, `stage3c_uncond` | **Kept as sub-rows** | Named sweep sub-rows (guide: one setting changed, reported next to the main row, never replacing it). |
 | 2b val score (89.57) and the R8a decision | **Kept** | The guide requires the Stage 2 decision and both val scores here before Stage 3. |
-| `multitask_effb0`, `SingleTask_effb0` | Removed (outdated) | Trained with the old wd and no grad clip. The guide says they "must be rerun", and the `s1_*` runs replace them. |
+| `multitask_effb0`, `SingleTask_effb0` | Removed (outdated) | Trained with the old wd and no grad clip. The guide says they "must be rerun", and the `stage1a` / `stage1b` runs replace them. |
 | `FineTunedB0(Logit+Hyperparameter)` | Removed (not comparable) | Stage 1 allows no logit adjustment, calibration tuning or hyperparameter search, and its settings were tuned on the test sets. |
 | `zeroshot_bioclip`, `zeroshot_clip` | Removed (not in guide) | They use their own pair prompts ("a photo of a tomato leaf with …"), not the 2b taxonomy heads, so they are not the 2b epoch-0 zero-shot sub-row. Generic CLIP has no place in the guide at all. |
-| Stage 2 Colab test numbers (2b, 2d, CoOp, CoOp + LA) | Removed (not comparable) | The Colab `evaluate()` has never been checked against the local evaluator, and CoOp is not a guide run. 2b still needs a test eval with `stage3/s3_r5/evaluate.py`. |
-| Colab CSP + KgCoOp (`CSP_KgCooP/`) | Removed (not comparable) | Open-world evaluator over all 9,625 pairs, plain-name prompts, a different selection rule and refitting on the full train set. The local R4 rows replace it. |
+| Stage 2 Colab test numbers (2b, 2d, CoOp, CoOp + LA) | Removed (not comparable) | The Colab `evaluate()` has never been checked against the local evaluator, and CoOp is not a guide run. 2b still needs a test eval with `stage3/stage3b/evaluate.py`. |
+| Colab CSP + KgCoOp (`CSP(another_scheme)/`) | Not comparable (kept as another scheme) | Open-world evaluator over all 9,625 pairs, plain-name prompts, a different selection rule and refitting on the full train set. The local R4 rows replace it. |
 
 ### Two evaluators, which metrics match
 
-Stage 1 is scored with `baseline/MultiTaskBaseline/EffB0/evaluate.py` and Stage 3 with `stage3/s3_r5/evaluate.py`. I checked the code of both:
+Stage 1 is scored with `stage1/stage1a/evaluate.py` and Stage 3 with `stage3/stage3b/evaluate.py`. I checked the code of both:
 
 - **Same in both** (comparable across every row): the candidate pair list (sorted train pairs, then sorted unseen pairs), the composition score, composition top-1/top-5, HM, class-balanced unseen top-1, and the scalar-bias sweep (calibrated best HM, AUSUC).
 - **Different** (marked †, compare only within Stage 1 or within Stage 3): **crop and disease accuracy**. Stage 1 takes the argmax of each head over all 55 / 175 classes. Stage 3 reads the crop and disease off the top-1 *composition*, so the prediction is limited to the 333 valid pairs. Stage 1 did not save logits, so its numbers cannot be recomputed the Stage 3 way without re-running the evaluation.
@@ -35,7 +39,7 @@ Values are percentages, except val score (mean of val crop and disease top-1), b
 | **Stage 2: frozen BioCLIP** | | | | | | | | | | | | | | | | | |
 | 2b taxonomy text (Stage 3 base) | main | 89.57 | not run | | | | | | | | | | | | | | 0.46 ± 0.18 |
 | **Stage 3: DISCO modules on 2b** | | | | | | | | | | | | | | | | | |
-| R4 (λ_kg 8, token LR 1e-3) | main | 79.36 | 49.7 | 78.5 | 6.7 | 41.0 | 10.3 | 11.8 | 53.8 | 49.6 | 33.5 | 8.03 | 83.3 | 52.8 | 64.0 | 13.7 | 0.46 ± 0.18 |
+| 3a R4 (λ_kg 8, token LR 1e-3) | main | 79.36 | 49.7 | 78.5 | 6.7 | 41.0 | 10.3 | 11.8 | 53.8 | 49.6 | 33.5 | 8.03 | 83.3 | 52.8 | 64.0 | 13.7 | 0.46 ± 0.18 |
 | ↳ λ_kg 8, token LR 5e-4 | sub | 79.58 | 49.1 | 78.1 | 7.3 | 41.2 | 10.2 | 12.7 | **54.0** | 49.4 | 32.8 | 8.31 | 83.4 | 52.3 | 63.1 | 13.7 | 0.46 |
 | ↳ λ_kg 8, token LR 1e-4 | sub | 73.62 | 43.9 | 75.2 | 5.7 | **41.8** | 8.1 | 10.1 | 53.7 | 46.0 | 29.3 | 8.04 | 80.9 | 47.4 | 62.5 | **13.8** | 0.46 |
 | ↳ λ_kg 8, token LR 5e-5 | sub | 70.72 | 40.3 | 71.2 | 6.0 | 40.1 | 7.6 | 10.5 | 51.3 | 43.1 | 26.4 | 8.19 | 78.8 | 44.3 | 61.7 | 13.3 | 0.46 |
@@ -43,14 +47,14 @@ Values are percentages, except val score (mean of val crop and disease top-1), b
 | ↳ λ_kg 0, token LR 5e-4 | sub | 85.99 | 56.9 | 83.7 | 6.3 | 26.5 | 8.0 | 11.3 | 40.2 | 52.3 | 39.4 | 6.79 | 87.8 | 59.4 | 67.2 | 11.0 | 0.46 |
 | ↳ λ_kg 0, token LR 1e-4 | sub | 81.89 | 50.6 | 80.1 | 6.5 | 33.5 | **11.0** | 11.5 | 47.2 | 47.9 | 33.1 | 5.87 | 85.9 | 53.3 | 64.3 | 10.1 | 0.46 |
 | ↳ λ_kg 0, token LR 5e-5 | sub | 76.60 | 43.4 | 74.6 | 5.2 | 33.1 | 10.4 | 9.3 | 45.9 | 43.5 | 27.3 | 5.30 | 80.7 | 47.3 | 59.9 | 10.1 | 0.46 |
-| R5 (separate adapters) | main | 91.58 | 65.7 | **89.6** | 5.2 | 29.1 | 7.3 | 9.7 | 44.0 | 60.1 | **49.0** | 7.26 | 91.6 | 67.5 | 70.2 | 10.2 | −0.02 ± 0.19 |
-| R5 + R6 (conditional GRL, λ 0.1) | main | 91.36 | 67.0 | **89.6** | 5.5 | 30.7 | 7.9 | 10.2 | 45.7 | 59.5 | 48.0 | 6.93 | **92.1** | **68.6** | 69.8 | 10.7 | −0.11 ± 0.21 |
+| 3b R5 (separate adapters) | main | 91.58 | 65.7 | **89.6** | 5.2 | 29.1 | 7.3 | 9.7 | 44.0 | 60.1 | **49.0** | 7.26 | 91.6 | 67.5 | 70.2 | 10.2 | −0.02 ± 0.19 |
+| 3c R5 + R6 (conditional GRL, λ 0.1) | main | 91.36 | 67.0 | **89.6** | 5.5 | 30.7 | 7.9 | 10.2 | 45.7 | 59.5 | 48.0 | 6.93 | **92.1** | **68.6** | 69.8 | 10.7 | −0.11 ± 0.21 |
 | ↳ λ 0 | sub | 91.58 | 65.7 | **89.6** | 5.2 | 29.1 | 7.3 | 9.7 | 44.0 | 60.1 | **49.0** | 7.26 | 91.6 | 67.5 | 70.2 | 10.2 | −0.02 ± 0.19 |
 | ↳ λ 0.03 | sub | **91.65** | 65.7 | **89.6** | 5.2 | 28.9 | 7.2 | 9.7 | 43.7 | 60.1 | **49.0** | 7.25 | 91.6 | 67.5 | 70.2 | 10.2 | −0.04 ± 0.22 |
 | ↳ λ 0.3 | sub | 91.36 | 65.3 | 89.1 | 8.1 | 33.7 | 8.0 | 14.5 | 48.9 | 59.4 | 46.7 | 6.44 | 91.6 | 66.8 | **70.5** | 13.3 | −0.20 ± 0.24 |
 | ↳ unconditional DANN, λ 0.1 | sub | 91.28 | 66.9 | 89.3 | 4.8 | 34.0 | 6.4 | 9.0 | 49.2 | 58.8 | 46.7 | 6.53 | 92.0 | 68.5 | 69.5 | 9.9 | −0.09 ± 0.24 |
-| R4 + R5 | main | 91.58 | 64.3 | 88.5 | 4.6 | 34.5 | 7.8 | 8.6 | 49.6 | 60.5 | 47.9 | 7.07 | 90.9 | 66.0 | 69.2 | 10.4 | 0.02 ± 0.19 |
-| All (R4 + R5 + R6) | main | 91.13 | 64.9 | 88.6 | 5.0 | 34.4 | 6.3 | 9.4 | 49.6 | 59.4 | 47.2 | 7.12 | 91.1 | 66.6 | 68.4 | 10.4 | −0.05 ± 0.20 |
+| 3d R4 + R5 | main | 91.58 | 64.3 | 88.5 | 4.6 | 34.5 | 7.8 | 8.6 | 49.6 | 60.5 | 47.9 | 7.07 | 90.9 | 66.0 | 69.2 | 10.4 | 0.02 ± 0.19 |
+| 3e All (R4 + R5 + R6) | main | 91.13 | 64.9 | 88.6 | 5.0 | 34.4 | 6.3 | 9.4 | 49.6 | 59.4 | 47.2 | 7.12 | 91.1 | 66.6 | 68.4 | 10.4 | −0.05 ± 0.20 |
 
 How to read the columns:
 
@@ -101,7 +105,7 @@ A 5-fold logistic-regression probe predicts the crop from the disease feature, o
 
 ## Next steps
 
-1. Evaluate the 2b base on the test sets with `stage3/s3_r5/evaluate.py`, so every Stage 3 row can be compared against its own base.
+1. Evaluate the 2b base on the test sets with `stage3/stage3b/evaluate.py`, so every Stage 3 row can be compared against its own base.
 2. Run the remaining Stage 2 rows from the guide (2a image only, 2c taxonomy + LLM, 2e = 2c + R8a).
 3. Make the evaluators agree on crop/disease accuracy: save logits in the Stage 1 evaluator and report both definitions in each. Also add closed-world numbers to the Stage 3 evaluator.
 4. Re-run R5 + R6 λ 0.3 with 2–3 more seeds to check whether its uncalibrated unseen gain holds.

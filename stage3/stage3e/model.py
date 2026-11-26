@@ -1,11 +1,11 @@
 """All (R4 + R5 + R6): R4 + R5 plus R6's conditional crop-invariance GRL on the disease feature f_d.
 
   f_d       = N(v + A_d(v))                     R5 disease feature (from R4R5Net)
-  D_phi(R_lambda(f_d))                          crop discriminator behind a GRL, as in stage3/s3_r5r6
+  D_phi(R_lambda(f_d))                          crop discriminator behind a GRL, as in stage3/stage3c
   L_inv     = CE over the crops that carry the image's disease, only diseases on >= 2 crops
   loss      = crop CE + disease CE + λ_kg · L_kg + L_inv
 
-The GRL, DANN ramp and crop mask are stage3/s3_r5r6's. The discriminator is training-only, so `frozen()`
+The GRL, DANN ramp and crop mask are stage3/stage3c's. The discriminator is training-only, so `frozen()`
 (the checkpoint's "model") is R4R5Net's R5Net snapshot and evaluation is exactly R5's.
 `conditional=False` is the unconditional-DANN ablation (all images, softmax over all 55 crops).
 """
@@ -15,8 +15,8 @@ import torch
 import torch.nn.functional as F
 from torch import nn
 
-from stage3.s3_r4r5.model import R4R5Net
-from stage3.s3_r5r6.model import grad_reverse
+from stage3.stage3d.model import R4R5Net
+from stage3.stage3c.model import grad_reverse
 
 
 class AllNet(R4R5Net):

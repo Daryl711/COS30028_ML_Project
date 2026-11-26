@@ -1,8 +1,8 @@
 """Train the EfficientNet-B0 baseline (training scheme, Stage 1) on DPD-Small seen data. Run from the repo root.
 
-  python baseline/MultiTaskBaseline/EffB0/train.py                                                # multi-task (1a)
-  python baseline/MultiTaskBaseline/EffB0/train.py --mode crop    --experiment s1_crop_effb0      # independent: crop (1b)
-  python baseline/MultiTaskBaseline/EffB0/train.py --mode disease --experiment s1_disease_effb0   # independent: disease (1b)
+  python stage1/stage1a/train.py                                                # multi-task (1a)
+  python stage1/stage1a/train.py --mode crop    --experiment stage1b_crop      # independent: crop (1b)
+  python stage1/stage1a/train.py --mode disease --experiment stage1b_disease   # independent: disease (1b)
 """
 import argparse
 import csv

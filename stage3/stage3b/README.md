@@ -15,9 +15,9 @@ s: BioCLIP's pretrained logit scale, fixed
 ## Run (from the repo root)
 
 ```bash
-pip install -r stage3/s3_r5/requirements.txt
-python -m stage3.s3_r5.train                                   # -> outputs/s3_r5/
-python -m stage3.s3_r5.evaluate --checkpoint outputs/s3_r5/best.pt
+pip install -r stage3/stage3b/requirements.txt
+python -m stage3.stage3b.train                                   # -> outputs/stage3b/
+python -m stage3.stage3b.evaluate --checkpoint outputs/stage3b/best.pt
 ```
 
 Needs `dataset/DPD_Small_dataset/`, the three CSVs, and `dataset/text/plant_descriptions.csv` +

@@ -6,9 +6,9 @@ One ONNX file per baseline, input "image" [1, 3, 224, 224] (already normalised),
   disease_logits  [1, 175]
   embedding       [1, D]      pooled backbone feature(s), for the similarity-ranked gallery
 
-Multi-task:   one backbone, two linear heads (outputs/s1_mt_effb0/best.pt).
+Multi-task:   one backbone, two linear heads (outputs/stage1a/best.pt).
 Independent:  the crop model and the disease model, each with its own backbone, bundled
-              into one graph (outputs/s1_crop_effb0/best.pt + outputs/s1_disease_effb0/best.pt).
+              into one graph (outputs/stage1b_crop/best.pt + outputs/stage1b_disease/best.pt).
               The embedding is both pooled features, each L2-normalised, concatenated.
 
 Usage (from the repo root):
@@ -24,16 +24,16 @@ import torch
 from torch import nn
 
 REPO = Path(__file__).resolve().parents[2]
-sys.path.insert(0, str(REPO / "baseline" / "MultiTaskBaseline" / "EffB0"))
+sys.path.insert(0, str(REPO / "stage1" / "stage1a"))
 from model import build_model  # noqa: E402  (training code, so the architecture matches exactly)
 
 OUT_DIR = REPO / "UserInterface" / "web" / "model"
 SIZE = 224
 
 EXPORTS = {
-    "effb0_multitask": [REPO / "outputs" / "s1_mt_effb0" / "best.pt"],
-    "effb0_independent": [REPO / "outputs" / "s1_crop_effb0" / "best.pt",
-                          REPO / "outputs" / "s1_disease_effb0" / "best.pt"],
+    "effb0_multitask": [REPO / "outputs" / "stage1a" / "best.pt"],
+    "effb0_independent": [REPO / "outputs" / "stage1b_crop" / "best.pt",
+                          REPO / "outputs" / "stage1b_disease" / "best.pt"],
 }
 
 
