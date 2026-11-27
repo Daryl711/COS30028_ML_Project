@@ -12,6 +12,7 @@ The code and outputs of every "Removed" row below have been deleted from the rep
 |---|---|---|
 | `stage1a`, `stage1b` (Stage 1 re-runs) | **Kept** | Guide Stage 1 runs, trained with the scheme's wd 0.05 and grad clip 1.0. |
 | `stage3a`, `stage3a_nokg`, `stage3b`, `stage3c`, `stage3d`, `stage3e` | **Kept** | The five guide Stage 3 runs, plus the R4 sub-row without λ_kg that the guide asks for. |
+| 2b epoch 0 (zero-shot) | **Kept, Colab evaluator** | `ML Project/Individual Ablation Test/Results/s2b_bioclip_tax/eval/metrics_epoch0.json`: the guide's "epoch 0 is a sub-row" for 2b, 333-pair protocol, same Colab run as the 2b row. The Colab `evaluate()` has not been checked against the local evaluator. |
 | `stage3a_lr*` (token-LR sweep), `stage3c_lam*`, `stage3c_uncond` | **Kept as sub-rows** | Named sweep sub-rows (guide: one setting changed, reported next to the main row, never replacing it). |
 | 2b val score (89.57) and the R8a decision | **Kept** | The guide requires the Stage 2 decision and both val scores here before Stage 3. |
 | `multitask_effb0`, `SingleTask_effb0` | Removed (outdated) | Trained with the old wd and no grad clip. The guide says they "must be rerun", and the `stage1a` / `stage1b` runs replace them. |
@@ -35,17 +36,18 @@ Values are percentages, except val score (mean of val crop and disease top-1), b
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 | **Stage 1: EfficientNet-B0** | | | | | | | | | | | | | | | | | |
 | 1a EffB0 multi-task | main | — | 67.1 | 87.6 | 4.1 | 27.6 | 3.6 | 7.8 | 42.0 | 60.3 | 46.7 | 6.58 | 89.4 | 68.6 | 68.5 | 8.4 | — |
-| 1b EffB0 single-task | main | — | **67.6** | 88.5 | **8.6** | 34.8 | 7.9 | **15.2** | 50.0 | **60.9** | 48.2 | 6.60 | 90.1 | 68.6 | 72.5 | 9.9 | — |
+| 1b EffB0 single-task | main | — | **67.6** | 88.5 | 8.6 | 34.8 | 7.9 | **15.2** | 50.0 | **60.9** | 48.2 | 6.60 | 90.1 | 68.6 | 72.5 | 9.9 | — |
 | **Stage 2: frozen BioCLIP** | | | | | | | | | | | | | | | | | |
+| 2b epoch 0 (BioCLIP zero-shot, taxonomy text) | sub (guide) | 24.9 | 5.3 | 21.5 | **20.9** | **46.9** | **14.8** | 8.4 | 29.5 | 8.7 | 2.9 | 1.87 | 48.5 | 7.2 | 37.0 | **30.5** | — |
 | 2b taxonomy text (Stage 3 base) | main | 89.57 | 63.8 | 88.7 | 3.7 | 25.8 | 5.0 | 6.9 | 39.9 | 57.2 | 43.5 | 7.79 | 91.2 | 65.7 | 66.7 | 8.0 | 0.46 ± 0.18 |
 | **Stage 3: DISCO modules on 2b** | | | | | | | | | | | | | | | | | |
 | 3a R4 (λ_kg 8, token LR 1e-3) | main | 79.36 | 49.7 | 78.5 | 6.7 | 41.0 | 10.3 | 11.8 | 53.8 | 49.6 | 33.5 | 8.03 | 83.3 | 52.8 | 64.0 | 13.7 | 0.46 ± 0.18 |
 | ↳ λ_kg 8, token LR 5e-4 | sub | 79.58 | 49.1 | 78.1 | 7.3 | 41.2 | 10.2 | 12.7 | **54.0** | 49.4 | 32.8 | 8.31 | 83.4 | 52.3 | 63.1 | 13.7 | 0.46 |
-| ↳ λ_kg 8, token LR 1e-4 | sub | 73.62 | 43.9 | 75.2 | 5.7 | **41.8** | 8.1 | 10.1 | 53.7 | 46.0 | 29.3 | 8.04 | 80.9 | 47.4 | 62.5 | **13.8** | 0.46 |
+| ↳ λ_kg 8, token LR 1e-4 | sub | 73.62 | 43.9 | 75.2 | 5.7 | 41.8 | 8.1 | 10.1 | 53.7 | 46.0 | 29.3 | 8.04 | 80.9 | 47.4 | 62.5 | 13.8 | 0.46 |
 | ↳ λ_kg 8, token LR 5e-5 | sub | 70.72 | 40.3 | 71.2 | 6.0 | 40.1 | 7.6 | 10.5 | 51.3 | 43.1 | 26.4 | 8.19 | 78.8 | 44.3 | 61.7 | 13.3 | 0.46 |
 | ↳ λ_kg 0 (no KG), token LR 1e-3 | sub (guide) | 86.44 | 58.0 | 85.1 | 6.4 | 32.1 | 8.2 | 11.6 | 46.6 | 54.0 | 40.3 | 6.42 | 89.1 | 59.9 | 66.6 | 11.5 | 0.46 |
 | ↳ λ_kg 0, token LR 5e-4 | sub | 85.99 | 56.9 | 83.7 | 6.3 | 26.5 | 8.0 | 11.3 | 40.2 | 52.3 | 39.4 | 6.79 | 87.8 | 59.4 | 67.2 | 11.0 | 0.46 |
-| ↳ λ_kg 0, token LR 1e-4 | sub | 81.89 | 50.6 | 80.1 | 6.5 | 33.5 | **11.0** | 11.5 | 47.2 | 47.9 | 33.1 | 5.87 | 85.9 | 53.3 | 64.3 | 10.1 | 0.46 |
+| ↳ λ_kg 0, token LR 1e-4 | sub | 81.89 | 50.6 | 80.1 | 6.5 | 33.5 | 11.0 | 11.5 | 47.2 | 47.9 | 33.1 | 5.87 | 85.9 | 53.3 | 64.3 | 10.1 | 0.46 |
 | ↳ λ_kg 0, token LR 5e-5 | sub | 76.60 | 43.4 | 74.6 | 5.2 | 33.1 | 10.4 | 9.3 | 45.9 | 43.5 | 27.3 | 5.30 | 80.7 | 47.3 | 59.9 | 10.1 | 0.46 |
 | 3b R5 (separate adapters) | main | 91.58 | 65.7 | **89.6** | 5.2 | 29.1 | 7.3 | 9.7 | 44.0 | 60.1 | **49.0** | 7.26 | 91.6 | 67.5 | 70.2 | 10.2 | −0.02 ± 0.19 |
 | 3c R5 + R6 (conditional GRL, λ 0.1) | main | 91.36 | 67.0 | **89.6** | 5.5 | 30.7 | 7.9 | 10.2 | 45.7 | 59.5 | 48.0 | 6.93 | **92.1** | **68.6** | 69.8 | 10.7 | −0.11 ± 0.21 |
@@ -86,9 +88,9 @@ A 5-fold logistic-regression probe predicts the crop from the disease feature, o
 
 ## Findings
 
-1. **No Stage 3 run beats the Stage 1 single-task baseline on HM.** The guide makes Stage 1 the reference to beat. Single-task EffB0 has the best seen top-1 (67.6), unseen top-1 (8.6), uncalibrated HM top-1 (15.2) and calibrated best HM (60.9) of all rows. The best Stage 3 rows come close on single metrics: R5 + R6 λ 0.3 reaches HM top-1 14.5, R4 + R5 a calibrated best HM of 60.5, and R5 has the best AUSUC (49.0 vs 48.2).
+1. **No Stage 3 run beats the Stage 1 single-task baseline on HM.** The guide makes Stage 1 the reference to beat. Single-task EffB0 has the best seen top-1 (67.6), uncalibrated HM top-1 (15.2) and calibrated best HM (60.9) of all rows, and the best unseen top-1 (8.6) of the trained rows (2b epoch 0 zero-shot scores 20.9 unseen but only 5.3 seen). The best Stage 3 rows come close on single metrics: R5 + R6 λ 0.3 reaches HM top-1 14.5, R4 + R5 a calibrated best HM of 60.5, and R5 has the best AUSUC (49.0 vs 48.2).
 2. **Sharing one backbone hurts unseen pairs.** EffB0 multi-task and single-task are about equal on seen (67.1 vs 67.6), but on unseen pairs multi-task is far worse: unseen top-1 4.1 vs 8.6, HM top-1 7.8 vs 15.2, AUSUC 46.7 vs 48.2. A likely cause is that shared features learn which crops and diseases appear together in training.
-3. **Disease recognition on unseen pairs is the bottleneck for every model.** Unseen disease accuracy is 8–14% in every row, while unseen crop accuracy is 60–73%. The models predict the diseases they saw with each crop during training.
+3. **Disease recognition on unseen pairs is the bottleneck for every model.** Unseen disease accuracy is 8–14% in every trained row (zero-shot BioCLIP at 2b epoch 0 reaches 30.5, and training on seen pairs removes it), while unseen crop accuracy is 60–73%. The models predict the diseases they saw with each crop during training.
 4. **R5 gives the best Stage 3 val score and calibrated curve, but not better unseen accuracy.** R5 raises the val score over the 2b base (91.58 vs 89.57) and has the best AUSUC (49.0). Its uncalibrated unseen top-1 is 5.2 and HM top-1 9.7, and it needs the largest calibration bias of the adapter runs (7.26), so the uncalibrated operating point is strongly biased toward seen pairs.
 5. **Crop leakage is not what limits unseen disease accuracy (H1 not supported).** The frozen feature leaks (0.46), but R5's disease adapter already brings leakage to zero (−0.02) with no change in unseen disease accuracy (10.2). R6 pushes leakage further below zero as λ grows (−0.04 / −0.11 / −0.20 for λ 0.03 / 0.1 / 0.3), while calibrated best HM (60.1 → 59.4) and AUSUC (49.0 → 46.7) fall. λ 0 reproduces R5 exactly, so the changes come from the reversed gradient and not the code path. The unconditional DANN is worse than the conditional version on nearly every metric.
 6. **The large uncalibrated gains are operating-point shifts, not better models.** R5 + R6 λ 0.3 (HM top-1 14.5, unseen disease 13.3) and R4 λ_kg 8 (unseen T5 41.0, HM T5 53.8, unseen disease 13.7) both lose calibrated best HM and AUSUC against R5. The val selection rule would not pick either of them.
