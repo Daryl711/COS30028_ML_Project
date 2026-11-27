@@ -1,0 +1,32 @@
+{
+  "best_epoch": 30,
+  "protocol": "generalized_valid_pairs",
+  "num_pairs": 333,
+  "test_seen": {
+    "n_images": 2000,
+    "n_skipped": 0,
+    "top1": 0.638,
+    "top5": 0.887,
+    "crop_acc": 0.912,
+    "disease_acc": 0.6565,
+    "class_balanced_acc": NaN
+  },
+  "test_unseen": {
+    "n_images": 1448,
+    "n_skipped": 0,
+    "top1": 0.03660220994475138,
+    "top5": 0.2575966850828729,
+    "crop_acc": 0.6671270718232044,
+    "disease_acc": 0.08011049723756906,
+    "class_balanced_acc": 0.04970578536819202
+  },
+  "test_hm_top1": 0.06923253318919273,
+  "test_hm_top5": 0.3992467611453285,
+  "ausuc": {
+    "auc": 0.4352594958563536,
+    "best_hm": 0.572489758371444,
+    "best_bias": 7.78792236328125,
+    "seen_at_best": 0.5155,
+    "unseen_at_best": 0.643646408839779
+  }
+}

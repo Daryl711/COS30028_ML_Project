@@ -12,13 +12,14 @@ The code and outputs of every "Removed" row below have been deleted from the rep
 |---|---|---|
 | `stage1a`, `stage1b` (Stage 1 re-runs) | **Kept** | Guide Stage 1 runs, trained with the scheme's wd 0.05 and grad clip 1.0. |
 | `stage3a`, `stage3a_nokg`, `stage3b`, `stage3c`, `stage3d`, `stage3e` | **Kept** | The five guide Stage 3 runs, plus the R4 sub-row without λ_kg that the guide asks for. |
-| 2b epoch 0 (zero-shot) | **Kept, Colab evaluator** | `ML Project/Individual Ablation Test/Results/s2b_bioclip_tax/eval/metrics_epoch0.json`: the guide's "epoch 0 is a sub-row" for 2b, 333-pair protocol, same Colab run as the 2b row. The Colab `evaluate()` has not been checked against the local evaluator. |
+| 2b epoch 0 (zero-shot) | **Kept, Colab evaluator** | `outputs/stage2b/eval/metrics_epoch0.json`: the guide's "epoch 0 is a sub-row" for 2b, 333-pair protocol, same Colab run as the 2b row. The Colab `evaluate()` has not been checked against the local evaluator. |
 | `stage3a_lr*` (token-LR sweep), `stage3c_lam*`, `stage3c_uncond` | **Kept as sub-rows** | Named sweep sub-rows (guide: one setting changed, reported next to the main row, never replacing it). |
 | 2b val score (89.57) and the R8a decision | **Kept** | The guide requires the Stage 2 decision and both val scores here before Stage 3. |
 | `multitask_effb0`, `SingleTask_effb0` | Removed (outdated) | Trained with the old wd and no grad clip. The guide says they "must be rerun", and the `stage1a` / `stage1b` runs replace them. |
 | `FineTunedB0(Logit+Hyperparameter)` | Removed (not comparable) | Stage 1 allows no logit adjustment, calibration tuning or hyperparameter search, and its settings were tuned on the test sets. |
 | `zeroshot_bioclip`, `zeroshot_clip` | Removed (not in guide) | They use their own pair prompts ("a photo of a tomato leaf with …"), not the 2b taxonomy heads, so they are not the 2b epoch-0 zero-shot sub-row. Generic CLIP has no place in the guide at all. |
-| Stage 2 Colab test numbers (2b, 2d, CoOp + LA) | Removed (not comparable) | The Colab `evaluate()` has never been checked against the local evaluator, and CoOp + LA is not a guide run. 2b still needs a test eval with `stage3/stage3b/evaluate.py`. |
+| `stage2b`, `stage2d`, `stage2d_tau0.5` (Stage 2 Colab runs, notebooks in `stage2/`) | **Kept, Colab evaluator (†)** | The 2b base and the two R8a runs, kept for the Stage 2 decision. Their test numbers come from the Colab `evaluate()`, which has not been checked against the local evaluator. |
+| Stage 2 Colab test numbers (CoOp + LA) | Removed (not comparable) | CoOp + LA is not a guide run. 2b still needs a test eval with `stage3/stage3b/evaluate.py`. |
 | `stage3a_coop` (CoOp only, `coop_colab.ipynb`) | **Kept as a † sub-row** | CoOp ablation of `3a R4` (4 shared context tokens, no CSP tokens, no KgCoOp), same `training_scheme.md` recipe, seed 42. Run in Colab (`stage3/stage3a/coop_colab.ipynb`), so it uses the Colab evaluator. † = compare with care until that evaluator is checked against the local one. |
 | Colab CSP + KgCoOp (`CSP(another_scheme)/`) | Not comparable (kept as another scheme) | Open-world evaluator over all 9,625 pairs, plain-name prompts, a different selection rule and refitting on the full train set. The local R4 rows replace it. |
 | `csp_raw`, `csp_kgcoop` (Pure CSP, `n_ctx 0`) | **Kept as sub-rows** | Pure CSP ablation of `3a R4` (prefix frozen, `n_ctx 0`, seed 42), trained with the `training_scheme.md` recipe. |
@@ -42,6 +43,8 @@ Values are percentages, except val score (mean of val crop and disease top-1), b
 | **Stage 2: frozen BioCLIP** | | | | | | | | | | | | | | | | | |
 | 2b epoch 0 (BioCLIP zero-shot, taxonomy text) | sub (guide) | 24.9 | 5.3 | 21.5 | **20.9** | **46.9** | **14.8** | 8.4 | 29.5 | 8.7 | 2.9 | 1.87 | 48.5 | 7.2 | 37.0 | **30.5** | — |
 | 2b taxonomy text (Stage 3 base) | main | 89.57 | 63.8 | 88.7 | 3.7 | 25.8 | 5.0 | 6.9 | 39.9 | 57.2 | 43.5 | 7.79 | 91.2 | 65.7 | 66.7 | 8.0 | 0.46 ± 0.18 |
+| ↳ 2d = 2b + R8a, τ_LA 1.0 † | sub (guide) | 71.16 | 52.4 | 82.6 | 3.2 | 28.5 | 3.0 | 6.1 | 42.4 | 50.1 | 34.4 | 8.36 | 86.3 | 54.2 | 55.7 | 6.1 | — |
+| ↳ 2d sweep, τ_LA 0.5 † | sub | 87.48 | 60.6 | 88.2 | 3.0 | 23.7 | 3.7 | 5.7 | 37.3 | 54.0 | 40.3 | 8.03 | 90.0 | 62.3 | 66.7 | 6.4 | — |
 | **Stage 3: DISCO modules on 2b** | | | | | | | | | | | | | | | | | |
 | 3a R4 (λ_kg 8, token LR 1e-3) | main | 79.36 | 49.7 | 78.5 | 6.7 | 41.0 | 10.3 | 11.8 | 53.8 | 49.6 | 33.5 | 8.03 | 83.3 | 52.8 | 64.0 | 13.7 | 0.46 ± 0.18 |
 | ↳ λ_kg 8, token LR 5e-4 | sub | 79.58 | 49.1 | 78.1 | 7.3 | 41.2 | 10.2 | 12.7 | **54.0** | 49.4 | 32.8 | 8.31 | 83.4 | 52.3 | 63.1 | 13.7 | 0.46 |
@@ -86,6 +89,8 @@ Decided on the val selection score, as `guide.md` requires. No test data was use
 | 2b BioCLIP + taxonomy | off | **89.57** |
 | 2d = 2b + R8a (guide default) | 1.0 | 71.16 |
 | 2d sweep | 0.5 | 87.48 |
+
+For reference, the test numbers (Colab evaluator †, table above) point the same way: 2d at τ_LA 1.0 / 0.5 against 2b gives seen T1 52.4 / 60.6 vs 63.8, unseen disease 6.1 / 6.4 vs 8.0, calibrated best HM 50.1 / 54.0 vs 57.2 and AUSUC 34.4 / 40.3 vs 43.5. Only unseen T5 at τ_LA 1.0 is higher (28.5 vs 25.8). Unseen differences are a few images and are noise.
 
 **Decision: R8a is off for every Stage 3 run.** 2d is below 2b at τ_LA 1.0 (−18.4) and at 0.5 (−2.1), so the Stage 3 base is 2b alone. 2a, 2c and 2e have no results yet (`stage2/stage2c/` has a notebook, but none of its numbers are recorded).
 

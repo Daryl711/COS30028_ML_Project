@@ -7,6 +7,7 @@ outputs/**
 !outputs/**/config.yaml
 !outputs/**/history.csv
 !outputs/**/eval/metrics.json
+!outputs/**/eval/metrics_epoch0.json
 !outputs/**/eval/top_confusions_seen.csv
 !outputs/**/eval/*.png
 !outputs/**/calibration_v2.json
