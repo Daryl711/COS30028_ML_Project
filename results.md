@@ -20,6 +20,7 @@ The code and outputs of every "Removed" row below have been deleted from the rep
 | `zeroshot_bioclip`, `zeroshot_clip` | Removed (not in guide) | They use their own pair prompts ("a photo of a tomato leaf with …"), not the 2b taxonomy heads, so they are not the 2b epoch-0 zero-shot sub-row. Generic CLIP has no place in the guide at all. |
 | Stage 2 Colab test numbers (2b, 2d, CoOp, CoOp + LA) | Removed (not comparable) | The Colab `evaluate()` has never been checked against the local evaluator, and CoOp is not a guide run. 2b still needs a test eval with `stage3/stage3b/evaluate.py`. |
 | Colab CSP + KgCoOp (`CSP(another_scheme)/`) | Not comparable (kept as another scheme) | Open-world evaluator over all 9,625 pairs, plain-name prompts, a different selection rule and refitting on the full train set. The local R4 rows replace it. |
+| `csp_raw`, `csp_kgcoop` (Pure CSP, `n_ctx 0`) | **Kept as sub-rows** | Pure CSP ablation of `3a R4` (prefix frozen, `n_ctx 0`, seed 42), trained with the `training_scheme.md` recipe. |
 
 ### Two evaluators, which metrics match
 
@@ -49,6 +50,8 @@ Values are percentages, except val score (mean of val crop and disease top-1), b
 | ↳ λ_kg 0, token LR 5e-4 | sub | 85.99 | 56.9 | 83.7 | 6.3 | 26.5 | 8.0 | 11.3 | 40.2 | 52.3 | 39.4 | 6.79 | 87.8 | 59.4 | 67.2 | 11.0 | 0.46 |
 | ↳ λ_kg 0, token LR 1e-4 | sub | 81.89 | 50.6 | 80.1 | 6.5 | 33.5 | 11.0 | 11.5 | 47.2 | 47.9 | 33.1 | 5.87 | 85.9 | 53.3 | 64.3 | 10.1 | 0.46 |
 | ↳ λ_kg 0, token LR 5e-5 | sub | 76.60 | 43.4 | 74.6 | 5.2 | 33.1 | 10.4 | 9.3 | 45.9 | 43.5 | 27.3 | 5.30 | 80.7 | 47.3 | 59.9 | 10.1 | 0.46 |
+| ↳ `n_ctx 0` (Pure CSP), λ_kg 8 | sub | 79.66 | 49.6 | 78.0 | 5.3 | 38.6 | 8.4 | 9.6 | 51.6 | 50.2 | 33.6 | 8.56 | 83.6 | 53.0 | 62.4 | 12.8 | 0.46 ± 0.18 |
+| ↳ `n_ctx 0` (Pure CSP), λ_kg 0 (no KG) | sub | 84.20 | 56.3 | 83.4 | 5.2 | 25.6 | 6.1 | 9.5 | 39.1 | 51.5 | 36.1 | 8.63 | 87.0 | 59.0 | 64.4 | 10.7 | 0.46 ± 0.18 |
 | 3b R5 (separate adapters) | main | 91.58 | 65.7 | **89.6** | 5.2 | 29.1 | 7.3 | 9.7 | 44.0 | 60.1 | **49.0** | 7.26 | 91.6 | 67.5 | 70.2 | 10.2 | −0.02 ± 0.19 |
 | 3c R5 + R6 (conditional GRL, λ 0.1) | main | 91.36 | 67.0 | **89.6** | 5.5 | 30.7 | 7.9 | 10.2 | 45.7 | 59.5 | 48.0 | 6.93 | **92.1** | **68.6** | 69.8 | 10.7 | −0.11 ± 0.21 |
 | ↳ λ 0 | sub | 91.58 | 65.7 | **89.6** | 5.2 | 29.1 | 7.3 | 9.7 | 44.0 | 60.1 | **49.0** | 7.26 | 91.6 | 67.5 | 70.2 | 10.2 | −0.02 ± 0.19 |
@@ -69,6 +72,8 @@ How to read the columns:
 - **Val score**: only the Stage 3 evaluator reports it. It is the `guide.md` selection rule and the only metric that may be used to pick between rows.
 
 Run details: all rows use seed 42. Best epochs are R4 22, R5 19, R5 + R6 23, R4 + R5 19, All 25. Every new module uses LR 1e-3 (guide decision); the token-LR sweep changes only the R4 prompt-token LR. The prompt drift ‖T − T⁰‖² (crop / disease) at the best epoch is 0.07 / 0.13 for R4, 1.17 / 1.40 for R4 with λ_kg 0 (1.08–1.13 / 1.41–1.45 at every lower LR), and 0.016 / 0.019 for R4 + R5 and 0.015 / 0.018 for All.
+
+Pure CSP (`n_ctx 0`) best epochs are 25 (λ_kg 8) and 29 (λ_kg 0), with prompt drift (crop / disease) 0.071 / 0.114 and 0.876 / 0.803 respectively (closed-world seen / unseen T1: 49.9 / 74.1 for λ_kg 8; 56.4 / 71.0 for λ_kg 0).
 
 ## Stage 2 decision: R8a logit adjustment
 
@@ -96,6 +101,7 @@ A 5-fold logistic-regression probe predicts the crop from the disease feature, o
 6. **The large uncalibrated gains are operating-point shifts, not better models.** R5 + R6 λ 0.3 (HM top-1 14.5, unseen disease 13.3) and R4 λ_kg 8 (unseen T5 41.0, HM T5 53.8, unseen disease 13.7) both lose calibrated best HM and AUSUC against R5. The val selection rule would not pick either of them.
 7. **Learnable prompts (R4) do not beat fixed taxonomy prompts.** Both R4 rows are below the 2b base on val (79.36 and 86.44 vs 89.57). The KgCoOp anchor holds the prompts near zero-shot and the model underfits (seen T1 49.7). Without the anchor the prompts drift to the same distance at every token LR from 1e-3 down to 5e-5, so a lower LR only slows fitting. lr 5e-4 wins on val at λ_kg 8 by 0.22 (about 3 val images) and loses at λ_kg 0, so the token LR stays at 1e-3.
 8. **The modules do not add up.** R4 + R5 ties R5 on val (91.58, the same 1229 of 1342 val predictions correct); with adapters present the prompts barely move (drift 0.016 / 0.019), so it is close to R5 with fixed prompts. It raises unseen T5 (29.1 → 34.5) and calibrated best HM (60.5), and lowers AUSUC (47.9). All (91.13) is the lowest adapter run on val, below R5 on calibrated best HM and AUSUC, so the guide's expectation that All is the best unseen / HM model does not hold.
+9. Removing the learnable CoOp context (`n_ctx 0`, pure CSP) shows the same pattern and does not improve on `3a R4` (val 84.20 / 79.66 vs 86.44 / 79.36; HM 9.5 / 9.6 vs 11.6 / 11.8; AUSUC 36.1 / 33.6 vs 40.3 / 33.5).
 
 ## Caveats
 
