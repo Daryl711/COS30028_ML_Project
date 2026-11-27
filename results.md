@@ -34,8 +34,8 @@ Values are percentages, except val score (mean of val crop and disease top-1), b
 | Run | Role | Val score | Seen T1 | Seen T5 | Unseen T1 | Unseen T5 | Bal. unseen T1 | HM T1 | HM T5 | Cal. best HM | AUSUC | Best bias | Crop S † | Dis S † | Crop U † | Dis U † | Leak ↓ |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 | **Stage 1: EfficientNet-B0** | | | | | | | | | | | | | | | | | |
-| 1a EffB0 multi-task | main | — | 67.1 | 87.6 | 4.1 | 27.6 | 3.6 | 7.8 | 42.0 | 60.3 | 46.7 | 6.58 | 89.4 | 68.6 | 68.5 | 8.4 | — |
-| 1b EffB0 single-task | main | — | **67.6** | 88.5 | **8.6** | 34.8 | 7.9 | **15.2** | 50.0 | **60.9** | 48.2 | 6.60 | 90.1 | 68.6 | 72.5 | 9.9 | — |
+| 1a EffB0 multi-task | main | 92.85 | 67.1 | 87.6 | 4.1 | 27.6 | 3.6 | 7.8 | 42.0 | 60.3 | 46.7 | 6.58 | 89.4 | 68.6 | 68.5 | 8.4 | — |
+| 1b EffB0 single-task | main | **93.67** ‡ | **67.6** | 88.5 | **8.6** | 34.8 | 7.9 | **15.2** | 50.0 | **60.9** | 48.2 | 6.60 | 90.1 | 68.6 | 72.5 | 9.9 | — |
 | **Stage 2: frozen BioCLIP** | | | | | | | | | | | | | | | | | |
 | 2b taxonomy text (Stage 3 base) | main | 89.57 | 63.8 | 88.7 | 3.7 | 25.8 | 5.0 | 6.9 | 39.9 | 57.2 | 43.5 | 7.79 | 91.2 | 65.7 | 66.7 | 8.0 | 0.46 ± 0.18 |
 | **Stage 3: DISCO modules on 2b** | | | | | | | | | | | | | | | | | |
@@ -50,7 +50,7 @@ Values are percentages, except val score (mean of val crop and disease top-1), b
 | 3b R5 (separate adapters) | main | 91.58 | 65.7 | **89.6** | 5.2 | 29.1 | 7.3 | 9.7 | 44.0 | 60.1 | **49.0** | 7.26 | 91.6 | 67.5 | 70.2 | 10.2 | −0.02 ± 0.19 |
 | 3c R5 + R6 (conditional GRL, λ 0.1) | main | 91.36 | 67.0 | **89.6** | 5.5 | 30.7 | 7.9 | 10.2 | 45.7 | 59.5 | 48.0 | 6.93 | **92.1** | **68.6** | 69.8 | 10.7 | −0.11 ± 0.21 |
 | ↳ λ 0 | sub | 91.58 | 65.7 | **89.6** | 5.2 | 29.1 | 7.3 | 9.7 | 44.0 | 60.1 | **49.0** | 7.26 | 91.6 | 67.5 | 70.2 | 10.2 | −0.02 ± 0.19 |
-| ↳ λ 0.03 | sub | **91.65** | 65.7 | **89.6** | 5.2 | 28.9 | 7.2 | 9.7 | 43.7 | 60.1 | **49.0** | 7.25 | 91.6 | 67.5 | 70.2 | 10.2 | −0.04 ± 0.22 |
+| ↳ λ 0.03 | sub | 91.65 | 65.7 | **89.6** | 5.2 | 28.9 | 7.2 | 9.7 | 43.7 | 60.1 | **49.0** | 7.25 | 91.6 | 67.5 | 70.2 | 10.2 | −0.04 ± 0.22 |
 | ↳ λ 0.3 | sub | 91.36 | 65.3 | 89.1 | 8.1 | 33.7 | 8.0 | 14.5 | 48.9 | 59.4 | 46.7 | 6.44 | 91.6 | 66.8 | **70.5** | 13.3 | −0.20 ± 0.24 |
 | ↳ unconditional DANN, λ 0.1 | sub | 91.28 | 66.9 | 89.3 | 4.8 | 34.0 | 6.4 | 9.0 | 49.2 | 58.8 | 46.7 | 6.53 | 92.0 | 68.5 | 69.5 | 9.9 | −0.09 ± 0.24 |
 | 3d R4 + R5 | main | 91.58 | 64.3 | 88.5 | 4.6 | 34.5 | 7.8 | 8.6 | 49.6 | 60.5 | 47.9 | 7.07 | 90.9 | 66.0 | 69.2 | 10.4 | 0.02 ± 0.19 |
@@ -64,7 +64,8 @@ How to read the columns:
 - **Cal. best HM, AUSUC, best bias**: a scalar bias is added to the unseen-pair scores and swept. Best HM is the best point on that sweep, and AUSUC is the area under the seen/unseen accuracy curve. The bias is chosen **on the test sets**, so best HM is optimistic for every row. A larger best bias means the model is more biased toward seen pairs.
 - **Crop / Dis S, U †**: per-head accuracy on the seen (S) and unseen (U) test split. These use a different definition in Stage 1 and Stage 3 (see above).
 - **Leak ↓**: crop-leakage probe on the disease feature (below). For 2b and R4 the probed feature is the frozen N(v).
-- **Val score**: only the Stage 3 evaluator reports it. It is the `guide.md` selection rule and the only metric that may be used to pick between rows.
+- **Val score**: mean of val crop and val disease top-1 (per-head argmax over all 55 / 175 classes) at the best epoch. It is the `guide.md` selection rule and the only metric that may be used to pick between rows. Every row uses the same val split (`split_train_val`, seed 42), so the column is comparable across stages. Stage 3 values come from `eval/metrics.json`; Stage 1 values come from `outputs/<run>/history.csv`, because the Stage 1 evaluator does not write the val score. 1a: crop 97.17, disease 88.52 at epoch 15.
+- **‡ 1b val score**: the crop and disease models are selected separately, so 93.67 is the mean of two best epochs from two checkpoints: crop model 98.21 (epoch 16) and disease model 89.12 (epoch 20).
 
 Run details: all rows use seed 42. Best epochs are R4 22, R5 19, R5 + R6 23, R4 + R5 19, All 25. Every new module uses LR 1e-3 (guide decision); the token-LR sweep changes only the R4 prompt-token LR. The prompt drift ‖T − T⁰‖² (crop / disease) at the best epoch is 0.07 / 0.13 for R4, 1.17 / 1.40 for R4 with λ_kg 0 (1.08–1.13 / 1.41–1.45 at every lower LR), and 0.016 / 0.019 for R4 + R5 and 0.015 / 0.018 for All.
 
